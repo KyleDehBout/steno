@@ -5,7 +5,7 @@ description: >
   Covers the draft format contract, Status values, Action column organisations,
   placeholders, relative dates, speaker attribution, numbering, and the next-meeting
   date. Load references/draft-format.md when writing or repairing a draft.
-compatibility: Designed for use with the meeting-notes-pipeline
+compatibility: Designed for use with the Steno pipeline
 metadata:
   version: "1.0"
 allowed-tools: Read, Bash

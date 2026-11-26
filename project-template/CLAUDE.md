@@ -22,7 +22,7 @@
 - Learning form script: Meeting Notes/skills/learning-form/scripts/generate_qa_form.py
 - Pipeline scorecard: Meeting Notes/pipeline-scorecard-[PROJECT].md
 - Pipeline tests (golden pairs): pipeline-tests/
-- Pipeline repo (for /sync-pipeline, and where AGENT and CHECK fixes are written): [FULL PATH TO THE meeting-notes-pipeline REPO]
+- Pipeline repo (for /sync-pipeline, and where AGENT and CHECK fixes are written): [FULL PATH TO THE steno REPO]
 - Formatter skill: Meeting Notes/meeting-notes-formatter-skill-[PROJECT].md
 - Transcripts: Meeting Notes/transcripts/
 - Output (pipeline drafts): Meeting Notes/output/

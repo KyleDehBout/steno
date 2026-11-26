@@ -5,7 +5,7 @@ description: >
   Covers tone, document structure, action column format, status values, and scope discipline.
   Load references/structure.md for section ordering details.
   Load references/typography.md for date formats and column layout.
-compatibility: Designed for use with the meeting-notes-pipeline
+compatibility: Designed for use with the Steno pipeline
 metadata:
   version: "1.0"
 allowed-tools: Read

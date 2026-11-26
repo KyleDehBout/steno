@@ -1,7 +1,7 @@
 ---
 name: [project]-formatter-notes
 description: >
-  [PROJECT NAME]-only drafting notes for Stage 1 of the meeting-notes pipeline. Not a
+  [PROJECT NAME]-only drafting notes for Stage 1 of the Steno pipeline. Not a
   user-facing skill: the formatter agent reads it from the "Formatter skill" path in CLAUDE.md.
 ---
 

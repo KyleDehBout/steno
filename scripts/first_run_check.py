@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""First-run rule for the Meeting Notes Pipeline.
+"""First-run rule for Steno.
 
 Wired to SessionStart in .claude/settings.json. On the first session after
 someone clones this repo, it opens the project setup form in a browser and
@@ -26,7 +26,7 @@ GENERATOR = REPO / "scripts" / "generate_setup_form.py"
 FORM_TEMPLATE = REPO / "assets" / "setup-form.html"
 
 CONTEXT = """\
-FIRST RUN — Meeting Notes Pipeline setup has been triggered automatically.
+FIRST RUN — Steno setup has been triggered automatically.
 
 The project setup form has been opened in the user's browser at:
   {form}

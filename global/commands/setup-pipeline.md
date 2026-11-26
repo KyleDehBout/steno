@@ -1,4 +1,4 @@
-# Setup Meeting Notes Pipeline
+# Setup Steno
 
 ## What this does
 Installs the global pipeline components into your Claude Code configuration and scaffolds
@@ -422,7 +422,7 @@ Make it executable:
 Open the newly created CLAUDE.md at PROJECT_PATH and make the following replacements:
 - [PROJECT NAME] → PROJECT_NAME
 - [FULL PATH TO PROJECT FOLDER] → PROJECT_PATH
-- [FULL PATH TO THE meeting-notes-pipeline REPO] → the repo root (the launcher and
+- [FULL PATH TO THE steno REPO] → the repo root (the launcher and
   /sync-pipeline read it from the "Pipeline repo" line)
 - Every occurrence of `Meeting Notes/` in file location values → MEETING_NOTES_FOLDER/
 - Every occurrence of [PROJECT] in file location values → PROJECT_NAME

@@ -6,7 +6,7 @@ description: >
   AI vocabulary, copula avoidance, filler, and chatbot artifacts. Loads
   references/humanizer-upstream-2.9.1-pipeline.md for the pattern definitions and examples.
   This file decides which patterns apply to formal minutes and which are switched off.
-compatibility: Designed for use with the meeting-notes-pipeline
+compatibility: Designed for use with the Steno pipeline
 metadata:
   version: "1.0"
   upstream: "blader/humanizer 2.9.1 (MIT)"

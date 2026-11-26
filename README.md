@@ -1,6 +1,6 @@
-# Meeting Notes Pipeline
+# Steno
 
-A Claude Code pipeline that transforms raw meeting transcripts into polished, professionally formatted meeting notes — and gets better with every correction your supervisor makes.
+Steno is a Claude Code pipeline that transforms raw meeting transcripts into polished, professionally formatted meeting notes — and gets better with every correction your supervisor makes.
 
 ## What it does
 
@@ -65,7 +65,7 @@ Setting up a second project later does not use the hook — run `/setup-pipeline
 ## Repository structure
 
 ```
-meeting-notes-pipeline/
+steno/
 ├── assets/
 │   └── setup-form.html    ← the first-run setup form
 ├── scripts/

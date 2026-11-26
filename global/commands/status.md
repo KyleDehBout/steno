@@ -1,4 +1,4 @@
-# Project status — meeting notes pipeline
+# Project status — Steno
 
 ## What this does
 Prints a snapshot of the current project state: what is in each folder, whether the

@@ -1,4 +1,4 @@
-# Audit pipeline learning — meeting notes pipeline
+# Audit pipeline learning — Steno
 
 ## What this does
 Summarises everything the pipeline has learned, rejected, and promoted across all

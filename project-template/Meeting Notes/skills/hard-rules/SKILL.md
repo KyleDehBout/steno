@@ -1,11 +1,11 @@
 ---
 name: hard-rules
 description: >
-  Absolute rules that must never be violated at any stage of the meeting notes pipeline.
+  Absolute rules that must never be violated at any stage of the Steno pipeline.
   Covers data isolation between sessions, attribution rules, speaker attribution prohibition,
   content discipline, and output format. Load references/terminology.md when processing
   any item involving technical or industry-specific terms.
-compatibility: Designed for use with the meeting-notes-pipeline
+compatibility: Designed for use with the Steno pipeline
 metadata:
   version: "1.0"
 allowed-tools: Read
