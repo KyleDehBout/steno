@@ -1,0 +1,27 @@
+.DS_Store
+*.DS_Store
+**/.DS_Store
+qa-session.html
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Local scratch / pre-sync backups — not part of the pipeline
+.backup-presync/
+Temp brain storming files/
+
+# First-run setup form — generated per machine, never committed
+setup-session.html
+.claude/.setup-state.json
+
+# Per-machine list of installed projects — holds local folder paths, never committed.
+# /setup-pipeline creates it and appends each project root.
+projects.txt
+
+# Tests that run against your own issued documents. They assert on real meeting
+# content, so they stay local. Add your own alongside the tracked tests if you want them.
+tests/test_validate.py
+tests/test_renderer.py
+tests/test_score_draft.py
+tests/test_render.py
