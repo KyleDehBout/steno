@@ -5,7 +5,7 @@ description: >
   supervisor-approved version from intake/. Generates a qa-session.html form in the
   project root, opens it in the browser, and waits. The form handles all three phases
   of review — proposed changes, style Q&A, and project context — and generates a
-  self-contained summary block the user copies with one click and pastes into Claude Code.
+  self-contained summary block the user copies with one click and pastes into their agent.
   /apply-learning then processes the paste. Writes only qa-session.html and its session
   JSON in the run folder; every other write, including the Open patterns table and the
   move of the final file to the issued archive, is /apply-learning's.
@@ -156,7 +156,7 @@ changes or questions, set that list to [].
 
 ## Step 3 — Write the form and open it
 
-Run, from the folder Claude was launched in (the form has always been written there):
+Run, from the folder the agent was started in (the form has always been written there):
 
 ```bash
 python3 "[Learning form script from AGENTS.md]" \

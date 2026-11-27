@@ -7,13 +7,14 @@ description: "Set up Steno for a new project: open the setup form, then scaffold
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
 
 ## What this does
-Installs the global pipeline components into your Claude Code configuration and scaffolds
+Installs the global pipeline components for your agent tool and scaffolds
 a new project folder ready to use. If you provide past meeting notes, the setup extracts
 your style, roster, and organisation names automatically.
 
-Project details are collected in a browser form, not in the terminal. On a fresh clone the
-form opens by itself; the user fills it in, copies the generated block, and pastes it back
-into Claude Code. See Step 1.
+Project details are collected in a browser form, not in the terminal. The user opens it
+with `python3 scripts/generate_setup_form.py` (in Claude Code it also opens by itself on a
+fresh clone), fills it in, copies the generated block, and pastes it back into the agent.
+See Step 1.
 
 ---
 
@@ -374,7 +375,7 @@ to PROJECT_PATH/CLAUDE.md and [repo-root]/project-template/GEMINI.md to
 PROJECT_PATH/GEMINI.md. Claude Code reads CLAUDE.md and Gemini CLI reads GEMINI.md; each
 stub only imports AGENTS.md. Never write project details into a stub.
 
-### Create Claude launcher
+### Create Claude launcher (Claude Code on macOS only)
 
 Skip this whole section if CREATE_LAUNCHER is NO.
 
@@ -641,7 +642,8 @@ Still needs your input:
   [List any style rules or hard rules sections left as [TO BE FILLED IN]]
 
 Next steps:
-1. Open Claude Code from PROJECT_PATH or PROJECT_PATH/MEETING_NOTES_FOLDER
+1. Open your agent tool (Claude Code, Codex CLI or Gemini CLI) from PROJECT_PATH or
+   PROJECT_PATH/MEETING_NOTES_FOLDER
 2. Complete any [TO BE FILLED IN] sections in the skill files
 3. Drop a transcript in MEETING_NOTES_FOLDER/transcripts/ and run /process-notes
 ---

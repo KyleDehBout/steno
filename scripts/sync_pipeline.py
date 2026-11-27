@@ -150,7 +150,10 @@ def command_skill(source):
     name = SKILL_PREFIX + source.stem
     return name, ('---\nname: %s\ndescription: %s\n---\n\n'
                   '<!-- Built from global/commands/%s by scripts/sync_pipeline.py. '
-                  'Edit that file, not this one. -->\n\n%s'
+                  'Edit that file, not this one. -->\n\n'
+                  '> **Commands.** Where this skill names a pipeline command such as '
+                  '`/learn`, a tool without slash commands runs the matching skill '
+                  'instead: `/learn` is `steno-learn`.\n\n%s'
                   % (name, json.dumps(fields['description'], ensure_ascii=False),
                      source.name, body))
 
