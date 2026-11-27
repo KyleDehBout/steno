@@ -25,3 +25,7 @@ tests/test_validate.py
 tests/test_renderer.py
 tests/test_score_draft.py
 tests/test_render.py
+
+# First-run marker, written by /setup-pipeline when setup finishes (older clones keep
+# it at .claude/.setup-state.json, ignored above)
+.steno/

@@ -103,9 +103,13 @@ Set EXTRACTED_DATA to empty. Proceed to Step 1 and open the setup form with no p
 **Hardcoded rule: project information is always collected in the browser form, never by
 asking the questions one at a time in the terminal.**
 
-On a fresh clone the SessionStart hook (`scripts/first_run_check.py`, wired in
-`.claude/settings.json`) has already generated and opened the form before this command
-runs. In that case skip straight to Step 1c and wait for the paste.
+The form may already be open, in which case skip straight to Step 1c and wait for the
+paste:
+- The user started setup the documented way, which works in every tool: they ran
+  `python3 scripts/generate_setup_form.py` in the Steno folder, and are now pasting the
+  `==PROJECT_SETUP==` block it produced.
+- In Claude Code on a fresh clone, the SessionStart hook (`scripts/first_run_check.py`,
+  wired in `.claude/settings.json`) ran that same command before this one.
 
 If the form is not already open — the user ran `/setup-pipeline` by hand, or setup has run
 on this machine before — generate and open it now.
@@ -249,20 +253,19 @@ document. The form is the last word.
 
 ## Step 2 — Install global files
 
-Determine the repo root (the directory containing this command's parent .claude/ folder).
+The repo root is the Steno clone: the folder holding `scripts/sync_pipeline.py`, normally
+the folder this session was opened in.
 
-Create ~/.claude/commands/ if it does not exist.
-Create ~/.claude/agents/ if it does not exist.
+Install for the tool you are running in — `claude` for Claude Code, `codex` for Codex
+CLI, `gemini` for Gemini CLI:
 
-For each file in [repo-root]/global/commands/:
-- If a file with the same name already exists in ~/.claude/commands/:
-  - Warn: "⚠ Skipped [filename] — already exists in ~/.claude/commands/. Review and merge manually if needed."
-- Otherwise: copy it to ~/.claude/commands/.
+```bash
+python3 "[repo-root]/scripts/sync_pipeline.py" --global --target [tool] --only-missing
+```
 
-For each file in [repo-root]/global/agents/:
-- If a file with the same name already exists in ~/.claude/agents/:
-  - Warn: "⚠ Skipped [filename] — already exists in ~/.claude/agents/. Review and merge manually if needed."
-- Otherwise: copy it to ~/.claude/agents/.
+It adds the agents, commands (Claude Code only) and skills that are absent, and leaves
+every file that already exists alone, listing each as `skipped`. If anything was
+skipped, warn: "⚠ Skipped [file] — already exists. Review and merge manually if needed."
 
 **Setup only ever adds files that are absent.** That is deliberate — it must never
 overwrite an agent someone has edited. It also means setup cannot deliver an update: if
@@ -520,9 +523,11 @@ sections and takes no extracted data.
 ## Step 5 — Mark setup complete
 
 Write the marker that tells the first-run hook not to reopen the form. Without this the
-setup form pops up again on the next session.
+setup form pops up again on the next Claude Code session.
 
-Write to `[repo-root]/.claude/.setup-state.json`:
+Write to `[repo-root]/.steno/setup-state.json`, creating `.steno/` if needed. (A clone
+set up before this path existed has `.claude/.setup-state.json`; leave it, the hook reads
+both.)
 
 ```json
 {
@@ -540,7 +545,8 @@ rm -f "[repo-root]/setup-session.html"
 ```
 
 Both paths are gitignored. To set up a second project later, the user runs
-`/setup-pipeline` by hand — the hook only ever fires on a fresh clone.
+`/setup-pipeline` by hand, or `python3 scripts/generate_setup_form.py` and pastes the
+block — the hook only ever fires on a fresh clone.
 
 Register the project in `[repo-root]/projects.txt`, the list `/apply-learning` tests every
 shared AGENT or CHECK change against. Add PROJECT_PATH (no trailing slash) only if no line
@@ -563,9 +569,11 @@ Print exactly this (substituting real values):
 ---
 Pipeline installed.
 
-Global files added to:
+Global files added for [tool] (the folders sync_pipeline.py printed), e.g. for
+Claude Code:
   ~/.claude/commands/
   ~/.claude/agents/
+  ~/.claude/skills/
 
 Project scaffolded at:
   PROJECT_PATH/

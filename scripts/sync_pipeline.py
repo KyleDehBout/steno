@@ -29,6 +29,9 @@ timestamped backup folder first, and it prints exactly what changed.
              flag may be repeated. Every path is resolved before anything is written.
   --all-projects  adds every project listed in the repo's projects.txt (one path per
              line, # comments), so a shared AGENT or CHECK change reaches all of them.
+  --only-missing  add files that are absent and never replace one that exists, even an
+             out-of-date one: /setup-pipeline's guarantee. Each file left alone is
+             listed as skipped, and the exit code is still 0.
   --keep N   after a sync, keep the newest N (default 5) .pipeline-backup-<stamp>
              folders in each location and delete older ones. Only folders this script
              made are ever deleted: the exact name pattern, holding only the folders it
@@ -167,8 +170,10 @@ def stamp():
 
 
 class Sync:
-    def __init__(self, dry_run):
+    def __init__(self, dry_run, only_missing=False):
         self.dry_run = dry_run
+        self.only_missing = only_missing
+        self.skipped = []
         self.copied = []
         self.updated = []
         self.unchanged = 0
@@ -184,6 +189,9 @@ class Sync:
             return
 
         action = 'update' if target.exists() else 'add'
+        if action == 'update' and self.only_missing:
+            self.skipped.append(relative)
+            return
         if self.dry_run:
             (self.updated if action == 'update' else self.copied).append(relative)
             return
@@ -326,6 +334,9 @@ def report(sync, backups):
         print('  added    %s' % path)
     for path in sync.updated:
         print('  updated  %s' % path)
+    for path in sync.skipped:
+        print('  skipped  %s (exists and differs; run sync without --only-missing to '
+              'update it)' % path)
     if sync.unchanged:
         print('  %d file(s) already current' % sync.unchanged)
     for failure in sync.failed:
@@ -359,6 +370,8 @@ def main(argv=None):
                         help='project root or its Meeting Notes folder (repeatable)')
     parser.add_argument('--all-projects', action='store_true',
                         help="also sync every project listed in the repo's projects.txt")
+    parser.add_argument('--only-missing', action='store_true',
+                        help='add absent files only; never replace an existing one')
     parser.add_argument('--dry-run', action='store_true',
                         help='print what would change and write nothing')
     parser.add_argument('--keep', type=int, default=5,
@@ -384,7 +397,7 @@ def main(argv=None):
         if notes not in notes_folders:
             notes_folders.append(notes)
 
-    sync = Sync(args.dry_run)
+    sync = Sync(args.dry_run, args.only_missing)
     backups = []
     prune = []
 

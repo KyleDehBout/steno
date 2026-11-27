@@ -6,18 +6,33 @@ values extracted from an uploaded .docx injected as prefill, then opens it in
 the default browser.
 
 Usage:
-  python scripts/generate_setup_form.py [--out DIR] [--prefill FILE|JSON] [--no-open]
+  python3 scripts/generate_setup_form.py [--out DIR] [--prefill FILE|JSON] [--no-open]
+
+This is how setup starts in every agent tool: run it in the Steno clone, fill in the
+form, and paste the block it gives you into your agent (Claude Code, Codex CLI,
+Gemini CLI) opened in the same folder. In Claude Code a first-run hook runs it for you.
 
 The generated file is self-contained: no network, no CDN, works offline.
+STENO_NO_BROWSER=1 writes the file without opening it, like --no-open.
+
+Prints the file's path on the first line of stdout and "opened" or "not opened" on the
+second; the first-run hook reads them. Next steps for a person go to stderr.
 """
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 PLACEHOLDER = "__PREFILL__"
+
+NEXT_STEPS = """
+Setup form: {form}
+{opened}Fill it in, click "Generate setup block", then copy the block and paste it into
+your AI agent (Claude Code, Codex CLI or Gemini CLI) opened in this Steno folder. The
+agent runs setup from the block; nothing is written until you paste it."""
 TEMPLATE = Path(__file__).resolve().parent.parent / "assets" / "setup-form.html"
 
 
@@ -74,9 +89,12 @@ def main():
     out_file = out_dir / "setup-session.html"
     out_file.write_text(html, encoding="utf-8")
 
-    opened = False if args.no_open else open_in_browser(out_file)
+    skip = args.no_open or os.environ.get("STENO_NO_BROWSER")
+    opened = False if skip else open_in_browser(out_file)
     print(str(out_file))
     print("opened" if opened else "not opened")
+    print(NEXT_STEPS.format(form=out_file, opened="" if opened else
+                            "Open it in your browser first. "), file=sys.stderr)
 
 
 if __name__ == "__main__":
