@@ -9,7 +9,7 @@
 #                        working/runs/<stem>/, the transcript with that stem and the
 #                        output draft named in the run folder's run.txt are deleted.
 #   --archive <dir>      Issued archive directory. Defaults to <Meeting Notes>/Archive.
-#                        Pass the "Issued archive" path from CLAUDE.md if it differs.
+#                        Pass the "Issued archive" path from AGENTS.md if it differs.
 #   --dry-run            Print what would be deleted and delete nothing.
 #
 # Refuses to delete anything unless the named file is already present and

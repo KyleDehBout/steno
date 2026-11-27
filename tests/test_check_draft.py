@@ -1039,6 +1039,66 @@ def test_rejects_characters_word_cannot_store():
           not any(f['code'] == 'CHARACTER' for f in found), out)
 
 
+STUB = '@AGENTS.md\n'
+
+
+def run_in_project(files, draft_text=None, flag=None):
+    """Lay out a project with the given instruction files, put the draft two folders
+    down and run the checker with no path flag, so it has to find the file itself.
+    files maps a name to its text; flag adds an explicit path argument."""
+    tmp = tempfile.mkdtemp()
+    try:
+        for name, text in files.items():
+            with open(os.path.join(tmp, name), 'w', encoding='utf-8') as handle:
+                handle.write(text)
+        runs = os.path.join(tmp, 'Meeting Notes', 'working')
+        os.makedirs(runs)
+        draft = os.path.join(runs, 'draft.md')
+        with open(draft, 'w', encoding='utf-8') as handle:
+            handle.write(GOOD if draft_text is None else draft_text)
+        args = [sys.executable, CHECK, draft]
+        if flag:
+            args += [flag[0], os.path.join(tmp, flag[1])]
+        proc = subprocess.run(args, capture_output=True, text=True)
+        return proc.returncode, (proc.stdout + proc.stderr).strip()
+    finally:
+        shutil.rmtree(tmp)
+
+
+def test_finds_agents_md_or_claude_md():
+    """AGENTS.md is the project file; CLAUDE.md still works for projects set up before it."""
+    for name in ('AGENTS.md', 'CLAUDE.md'):
+        code, out = run_in_project({name: CLAUDE_MD})
+        check('%s only: found by searching up from the draft, good draft passes' % name,
+              code == 0, out)
+        code, out = run_in_project(
+            {name: CLAUDE_MD}, GOOD.replace('Test Project – Project Meeting', 'Wrong Title'))
+        check('%s only: a message names %s' % (name, name),
+              code == 1 and ('but %s sets' % name) in out, out)
+    code, out = run_in_project({})
+    check('neither file: stops and says which files it looked for',
+          code != 0 and 'AGENTS.md' in out and 'CLAUDE.md' in out, out)
+
+
+def test_agents_md_wins_over_claude_md():
+    """A current project has both: AGENTS.md holds the project, CLAUDE.md is a stub."""
+    code, out = run_in_project({'AGENTS.md': CLAUDE_MD, 'CLAUDE.md': STUB})
+    check('both, CLAUDE.md a stub: AGENTS.md is read and the good draft passes',
+          code == 0 and 'no roster' not in out, out)
+    other = CLAUDE_MD.replace('Test Project – Project Meeting', 'Other – Project Meeting')
+    code, out = run_in_project({'AGENTS.md': CLAUDE_MD, 'CLAUDE.md': other})
+    check('both with different titles: AGENTS.md wins', code == 0, out)
+    code, out = run_in_project({'AGENTS.md': other, 'CLAUDE.md': CLAUDE_MD})
+    check('both with different titles: the AGENTS.md title is the one enforced',
+          code == 1 and 'but AGENTS.md sets' in out, out)
+
+
+def test_agents_md_flag_and_claude_md_alias():
+    for flag in ('--agents-md', '--claude-md'):
+        code, out = run_in_project({'notes.md': CLAUDE_MD}, flag=(flag, 'notes.md'))
+        check('%s <path> reads that file' % flag, code == 0, out)
+
+
 if __name__ == '__main__':
     print('checker  : %s\n' % os.path.normpath(CHECK))
     for name, function in sorted(globals().items()):

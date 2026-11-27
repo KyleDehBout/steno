@@ -39,7 +39,7 @@ Prepared by: NOVA Limited
 ## Rules
 
 1. **Header block** — four `KEY: value` lines in this order: `TITLE`, `HELD ON`, `TIME`,
-   `MEETING NO`. `MEETING NO` may be `[not provided]`. `TIME` may be only when CLAUDE.md
+   `MEETING NO`. `MEETING NO` may be `[not provided]`. `TIME` may be only when AGENTS.md
    has no "Recurring meeting time" line. `TITLE` and `HELD ON` never may.
 2. **`HELD ON`** — `Thursday July 16, 2026`. No comma after the day name, no ordinal
    suffix. The day name must match the calendar date.
@@ -52,7 +52,7 @@ Prepared by: NOVA Limited
 7. **Sub-items** — `N.M.K | text | Action | Status`. The Action and Status cells may be
    empty, but the two pipes are always present. This rule is the one home of both
    cells' permitted values; other files point here rather than restate them:
-   - **Action** — organisation names only, each spelled as in CLAUDE.md "Organisation
+   - **Action** — organisation names only, each spelled as in AGENTS.md "Organisation
      names". Never a person's name or initials. Two or more organisations sharing an
      action are joined by `/` with no spaces (`Org A/Org B`). When to name a second
      organisation is the project's rule, in its hard rules or supervisor style guide.
@@ -88,15 +88,15 @@ Prepared by: NOVA Limited
 
 ## What the checker enforces beyond the shape
 
-Run `python3 check_draft.py <draft> --claude-md <path to CLAUDE.md>`. It reads the roster
-and the permitted organisation list from CLAUDE.md, so it never carries names of its own.
+Run `python3 check_draft.py <draft> --agents-md <path to AGENTS.md>`. It reads the roster
+and the permitted organisation list from AGENTS.md, so it never carries names of its own.
 
 Errors (exit 1):
 
 - A Status value outside the rule 7 set, including the literal `Outstanding`.
-- An Action value that is not an organisation name from CLAUDE.md, or that names a
+- An Action value that is not an organisation name from AGENTS.md, or that names a
   person from the roster (rule 7). Case is not an error: `Horizon` for `HORIZON` is a warning, and
-  the CLAUDE.md spelling stays the one to use.
+  the AGENTS.md spelling stays the one to use.
 - A sub-item with empty text, a section or subsection with no sub-items, a bullet below
   the `MEETINGS:` line or under a NOTE line, and a `MEETING NO` that is neither a number
   nor `[not provided]`.
@@ -109,7 +109,7 @@ Errors (exit 1):
 - A Meetings line not in the rule 10 shape: a missing or malformed time, a malformed
   date, or any extra words.
 - A next-meeting date that falls on the wrong day. The day and the interval come from
-  the "Recurring meeting day" and "Recurring meeting interval (days)" keys in CLAUDE.md;
+  the "Recurring meeting day" and "Recurring meeting interval (days)" keys in AGENTS.md;
   leave a key out and that check does not run.
 - Speaker attribution: "he said", "she noted", "<roster name> confirmed", including a
   roster first name or surname alone ("Sam confirmed").
@@ -119,14 +119,14 @@ Errors (exit 1):
 Warnings (exit 0, reported):
 
 - A sub-item with no Action or no Status.
-- An attendee who is not on the CLAUDE.md roster.
-- An Action or attendee organisation that differs from CLAUDE.md only in case.
+- An attendee who is not on the AGENTS.md roster.
+- An Action or attendee organisation that differs from AGENTS.md only in case.
 - A next-meeting date on the right day but not exactly one interval after this meeting.
 - An XML entity such as `&amp;` in text. Drafts carry raw text (`T&T`); the renderer
   escapes it, so a pre-escaped entity would print literally.
 - A phrase the supervisor style guide bans. Only its "Wording preferences" lines written
   `- Say "X" not "Y"` or `- Never use "Y"` are read, from the "Supervisor style guide"
-  path in CLAUDE.md; the warning names the phrase to use. Stage 4 owns the rewrite.
+  path in AGENTS.md; the warning names the phrase to use. Stage 4 owns the rewrite.
 
 ## Why these and not others
 

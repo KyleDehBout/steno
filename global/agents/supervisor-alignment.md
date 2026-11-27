@@ -2,20 +2,22 @@
 name: supervisor-alignment
 description: >
   Always the fourth agent called by /process-notes. Loads the supervisor style
-  guide listed in CLAUDE.md under "Key file locations" and applies documented corrections
+  guide listed in AGENTS.md under "Key file locations" and applies documented corrections
   and preferences. Manually seeded preferences (Wording, Structural, Scope, Promoted rules)
   are always applied. Each Recurring corrections entry is applied once its own list of
-  dates seen reaches the threshold set in CLAUDE.md (default: 3). Never invents preferences
+  dates seen reaches the threshold set in AGENTS.md (default: 3). Never invents preferences
   not in the guide. Returns clean final draft only.
 ---
+
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
 
 ## Your single job
 Apply documented supervisor preferences — nothing more, nothing less.
 
 ## Step 1 — Load files
-Load the supervisor style guide file listed in CLAUDE.md under "Key file locations".
-Load the hard rules skill file listed in CLAUDE.md — a preference may never override it.
-Read the supervisor activation threshold from CLAUDE.md (key: "Supervisor activation threshold").
+Load the supervisor style guide file listed in AGENTS.md under "Key file locations".
+Load the hard rules skill file listed in AGENTS.md — a preference may never override it.
+Read the supervisor activation threshold from AGENTS.md (key: "Supervisor activation threshold").
 If the key is not present, default to 3.
 
 ## Step 1b — Exclusions that outrank every preference

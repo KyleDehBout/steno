@@ -95,7 +95,7 @@ steno/
 │       ├── docx-renderer.md
 │       └── learning-reviewer.md
 └── project-template/      ← copied and renamed per project
-    ├── CLAUDE.md
+    ├── AGENTS.md
     └── Meeting Notes/
         ├── supervisor-style-guide-[PROJECT].md
         ├── pipeline-memory-[PROJECT].md     ← open patterns, open decisions, run log
@@ -153,7 +153,7 @@ The installer scaffolds your project folder with placeholder content. Before run
 
 4. **`supervisor-style-guide-[PROJECT].md`** — leave blank to start. It fills in automatically as you run `/learn` cycles. You can seed it manually with known preferences.
 
-The pipeline's `supervisor-alignment` agent applies seeded preferences immediately, and holds recurring corrections back until the threshold in CLAUDE.md is reached (default: 3) — so there's no pressure to pre-fill it.
+The pipeline's `supervisor-alignment` agent applies seeded preferences immediately, and holds recurring corrections back until the threshold in AGENTS.md is reached (default: 3) — so there's no pressure to pre-fill it.
 
 ---
 
@@ -222,6 +222,6 @@ The skill files in `skills/` let you separate what is a hard rule (never violate
 
 ## Multiple projects
 
-Each project gets its own copy of the project-template folder with its own roster, style guide, and memory log. The global commands and agents are shared across all projects. Running `/process-notes` in a project folder automatically uses that project's CLAUDE.md, skill files, and style guide.
+Each project gets its own copy of the project-template folder with its own roster, style guide, and memory log. The global commands and agents are shared across all projects. Running `/process-notes` in a project folder automatically uses that project's AGENTS.md, skill files, and style guide.
 
 Because the agents and `check_draft.py` are shared, a fix learned on one project changes every project. `projects.txt` lists every installed project. `/apply-learning` only proposes an AGENT or CHECK change: it is written after you say yes, committed only if the repo tests pass, and synced only after `/test-pipeline` passes on every listed project. `sync_pipeline.py --all-projects` syncs them all in one run. `/setup-pipeline` adds each new project to `projects.txt` (once, even after `--reinit`).

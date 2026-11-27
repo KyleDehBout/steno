@@ -1,5 +1,7 @@
 # Setup Steno
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## What this does
 Installs the global pipeline components into your Claude Code configuration and scaffolds
 a new project folder ready to use. If you provide past meeting notes, the setup extracts
@@ -216,7 +218,7 @@ Then run these checks before continuing:
 - If FOLDER_MODE is EXISTING, PROJECT_PATH/MEETING_NOTES_FOLDER exists. If not, say so and
   create it.
 - If TEMPLATE_SOURCE is set, the file exists and ends in `.docx`.
-- **Existing project guard.** Look for `CLAUDE.md` in PROJECT_PATH and in
+- **Existing project guard.** Look for `AGENTS.md` or `CLAUDE.md` in PROJECT_PATH and in
   PROJECT_PATH/MEETING_NOTES_FOLDER (some projects keep it inside the Meeting Notes
   folder), and for `pipeline-memory-*.md` in PROJECT_PATH/MEETING_NOTES_FOLDER. If any
   exists, this project is already set up and holds learned rules: its roster, org names,
@@ -226,11 +228,11 @@ Then run these checks before continuing:
     update agents, commands and skill scripts, run /sync-pipeline. To start the project
     files again from blank templates, run /setup-pipeline --reinit (it backs up first)."
     Write nothing.
-  - With `--reinit`, back up before anything else is written: copy `CLAUDE.md` from both
+  - With `--reinit`, back up before anything else is written: copy `AGENTS.md`, `CLAUDE.md` and `GEMINI.md` from both
     places it may be, every top-level file in PROJECT_PATH/MEETING_NOTES_FOLDER, the
     `skills/` folder and any `Claude — * Launcher.command` into
     `PROJECT_PATH/MEETING_NOTES_FOLDER/.setup-backup-<YYYYMMDD-HHMMSS>/`, keeping their
-    relative paths (the root `CLAUDE.md` goes in as `project-root/CLAUDE.md`). Print the
+    relative paths (a root file goes in as `project-root/<name>`, e.g. `project-root/AGENTS.md`). Print the
     backup path. Then carry on; with `--reinit` the copy steps below overwrite.
 
 Ask about a failed check only. Everything that parsed cleanly is settled — do not read it
@@ -355,10 +357,15 @@ If it prints "Setup has already run for this project", that is not an error — 
 already has its template. Save the existing blank template path as BLANK_TEMPLATE_PATH and
 carry on.
 
-### Create CLAUDE.md at project root
-Copy [repo-root]/project-template/CLAUDE.md to PROJECT_PATH/CLAUDE.md, copy-if-absent like
+### Create AGENTS.md at project root
+Copy [repo-root]/project-template/AGENTS.md to PROJECT_PATH/AGENTS.md, copy-if-absent like
 every other project file. The existing project guard in Step 1d has already stopped setup
-if a CLAUDE.md exists, unless `--reinit` was passed and the backup was made.
+if an AGENTS.md or CLAUDE.md exists, unless `--reinit` was passed and the backup was made.
+
+Then copy the two stubs beside it, copy-if-absent: [repo-root]/project-template/CLAUDE.md
+to PROJECT_PATH/CLAUDE.md and [repo-root]/project-template/GEMINI.md to
+PROJECT_PATH/GEMINI.md. Claude Code reads CLAUDE.md and Gemini CLI reads GEMINI.md; each
+stub only imports AGENTS.md. Never write project details into a stub.
 
 ### Create Claude launcher
 
@@ -372,19 +379,22 @@ Write the following content into it:
 ```
 #!/bin/bash
 DIR="$(cd "$(dirname "$0")" && pwd)"
-while [ ! -f "$DIR/CLAUDE.md" ] && [ "$DIR" != "/" ]; do
+while [ ! -f "$DIR/AGENTS.md" ] && [ ! -f "$DIR/CLAUDE.md" ] && [ "$DIR" != "/" ]; do
   DIR="$(dirname "$DIR")"
 done
-if [ ! -f "$DIR/CLAUDE.md" ]; then
-  echo "error: could not find CLAUDE.md above launcher — not launching Claude"
+# The project instruction file: AGENTS.md, or CLAUDE.md in a project set up before it.
+if [ -f "$DIR/AGENTS.md" ]; then PROJECT_FILE=AGENTS.md
+elif [ -f "$DIR/CLAUDE.md" ]; then PROJECT_FILE=CLAUDE.md
+else
+  echo "error: could not find AGENTS.md or CLAUDE.md above launcher — not launching Claude"
   exit 1
 fi
 cd "$DIR"
-# DIR is the folder holding CLAUDE.md: the project root or its Meeting Notes folder.
+# DIR is the folder holding that file: the project root or its Meeting Notes folder.
 # sync_pipeline.py accepts either.
-REPO=$(grep -m1 "Pipeline repo (for /sync-pipeline" CLAUDE.md | sed 's/^[^:]*: *//')
+REPO=$(grep -m1 "Pipeline repo (for /sync-pipeline" "$PROJECT_FILE" | sed 's/^[^:]*: *//')
 if [ -z "$REPO" ] || [ ! -f "$REPO/scripts/sync_pipeline.py" ]; then
-  echo "error: pipeline repo not found (check 'Pipeline repo' line in CLAUDE.md) — not launching Claude"
+  echo "error: pipeline repo not found (check 'Pipeline repo' line in $PROJECT_FILE) — not launching Claude"
   exit 1
 fi
 # Uncommitted edits to what sync copies are unfinished work: never push them to a project.
@@ -418,8 +428,8 @@ Make it executable:
 
 ## Step 4 — Populate project files
 
-### CLAUDE.md
-Open the newly created CLAUDE.md at PROJECT_PATH and make the following replacements:
+### AGENTS.md
+Open the newly created AGENTS.md at PROJECT_PATH and make the following replacements:
 - [PROJECT NAME] → PROJECT_NAME
 - [FULL PATH TO PROJECT FOLDER] → PROJECT_PATH
 - [FULL PATH TO THE steno REPO] → the repo root (the launcher and
@@ -440,10 +450,10 @@ Open the newly created CLAUDE.md at PROJECT_PATH and make the following replacem
   example in place. A missing line switches its check off; a bracketed example would be read
   as the real value.
 
-If NOTES is not empty, append a `## Project notes` section at the end of CLAUDE.md
+If NOTES is not empty, append a `## Project notes` section at the end of AGENTS.md
 containing that text verbatim.
 
-### DOCX renderer entries in CLAUDE.md
+### DOCX renderer entries in AGENTS.md
 
 In addition to the standard replacements, fill in the four DOCX renderer keys:
 - `[PROJECT]_blank_template.docx` → BLANK_TEMPLATE_PATH (or leave with warning comment if not set)
@@ -555,7 +565,9 @@ Global files added to:
 
 Project scaffolded at:
   PROJECT_PATH/
-  └── CLAUDE.md  ← open Claude Code from here or any subfolder
+  ├── AGENTS.md  ← the project file: roster, organisations, file locations
+  ├── CLAUDE.md  ← stub that points Claude Code to AGENTS.md
+  └── GEMINI.md  ← stub that points Gemini CLI to AGENTS.md
 
 Meeting Notes folder:
   PROJECT_PATH/MEETING_NOTES_FOLDER/
@@ -604,7 +616,7 @@ Settings applied from the setup form:
   Document title       DOCUMENT_TITLE
   Prepared-by line     PREPARED_BY
   [For any of these left empty, print "not set" and add one line: "The header falls back to
-  this value when a transcript doesn't state it. Add it to CLAUDE.md if you know it."]
+  this value when a transcript doesn't state it. Add it to AGENTS.md if you know it."]
 
 [If past notes were uploaded, include this block:]
 Auto-populated from your uploaded notes:

@@ -3,7 +3,7 @@
 Usage: render.py <draft.md> --project <Meeting Notes dir> --out <path.docx>
 
 Runs the seven render steps with the sibling scripts, in order:
-  1 clone     copy the project's blank template (CLAUDE.md "DOCX blank template")
+  1 clone     copy the project's blank template (AGENTS.md "DOCX blank template")
   2 unpack    unpack.py
   3 build     build_body_xml.py, with the project's references/constants.json
   4 splice    splice_body.py
@@ -14,7 +14,7 @@ Runs the seven render steps with the sibling scripts, in order:
 Any failure prints `RENDER FAILED at Step N (<step>): [<kind>] <reason>` and exits 1.
 The kind says who can fix it, and /process-notes routes on it:
   draft     the draft is at fault; the reason names it as "draft line N" when it can
-  config    the project's template, CLAUDE.md template key or constants.json
+  config    the project's template, AGENTS.md template key or constants.json
   install   a pipeline script is missing (/sync-pipeline)
   input     the draft file passed in does not exist
   system    the disk: a file could not be written
@@ -133,11 +133,16 @@ def draft_lines(reason, draft):
 
 
 def blank_template(project):
-    """The template named in CLAUDE.md, which sits in the project folder or its parent.
+    """The template named in the project instruction file, which sits in the project
+    folder or its parent.
 
-    CLAUDE.md paths start at the project root ("Meeting Notes/..."), the parent of
-    the Meeting Notes folder."""
-    for claude_md in (project / 'CLAUDE.md', project.parent / 'CLAUDE.md'):
+    That file is AGENTS.md, or CLAUDE.md in a project set up before AGENTS.md; at one
+    folder level AGENTS.md wins, since a CLAUDE.md beside it only points to it. Its
+    paths start at the project root ("Meeting Notes/..."), the parent of the Meeting
+    Notes folder."""
+    candidates = [folder / name for folder in (project, project.parent)
+                  for name in ('AGENTS.md', 'CLAUDE.md')]
+    for claude_md in candidates:
         if not claude_md.is_file():
             continue
         for line in claude_md.read_text(encoding='utf-8').splitlines():
@@ -148,7 +153,8 @@ def blank_template(project):
                            f'no "DOCX blank template" line in {claude_md} — add '
                            f'"- DOCX blank template: Meeting Notes/<PROJECT>_blank_template.docx" '
                            f'under Key file locations', 'config')
-    raise RenderFailed('Step 1 (clone)', f'no CLAUDE.md in {project} or its parent', 'config')
+    raise RenderFailed('Step 1 (clone)', f'no AGENTS.md or CLAUDE.md in {project} or its parent',
+                       'config')
 
 
 def render(draft, project, out):

@@ -7,7 +7,7 @@
 - One counting model: each "Open patterns" row lists the dates the pattern was seen, and
   its count is the number of distinct dates. /learn proposes a pattern on its second
   date; /apply-learning promotes it automatically once its dates reach the "Supervisor
-  activation threshold" in CLAUDE.md, unless it is blocked. The supervisor guide's
+  activation threshold" in AGENTS.md, unless it is blocked. The supervisor guide's
   "Recurring corrections" entries count their dates the same way.
 - AGENT and CHECK patterns are never promoted automatically. They change the shared
   pipeline repo, which every project runs, so /apply-learning logs each as PROPOSED and
@@ -51,7 +51,7 @@ it has nothing to do with.
 
 Maintained by /apply-learning from the SECTION 0 lines of the review paste. A difference
 seen once is logged here and nowhere else. It becomes a proposal on its second date and
-a rule at the threshold set in CLAUDE.md. This table is why a correction can accumulate
+a rule at the threshold set in AGENTS.md. This table is why a correction can accumulate
 instead of being rejected as a one-off.
 
 | Pattern | Dates seen | Category | Status |

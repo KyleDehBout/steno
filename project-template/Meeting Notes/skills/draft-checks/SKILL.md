@@ -32,7 +32,7 @@ The two runs differ. Stage 2.5 checks the draft alone:
 
 ```bash
 python3 "[draft checks scripts]/check_draft.py" "[working dir]/runs/[stem]/stage-2.md" \
-  --claude-md "[project CLAUDE.md]" --stage 2 \
+  --agents-md "[project AGENTS.md]" --stage 2 \
   --scorecard "[pipeline scorecard]" \
   --json "[working dir]/runs/[stem]/checks-stage-2.json"
 ```
@@ -42,7 +42,7 @@ than left to judgement:
 
 ```bash
 python3 "[draft checks scripts]/check_draft.py" "[working dir]/runs/[stem]/stage-4.md" \
-  --claude-md "[project CLAUDE.md]" --ledger "[working dir]/runs/[stem]/ledger.md" \
+  --agents-md "[project AGENTS.md]" --ledger "[working dir]/runs/[stem]/ledger.md" \
   --stage 4 --scorecard "[pipeline scorecard]" \
   --json "[working dir]/runs/[stem]/checks-stage-4.json"
 ```
@@ -63,7 +63,7 @@ stage that owns the rule. Exit 2 is a usage mistake.
 
 - It never edits the draft. It reports and exits.
 - It carries no project data. Roster, organisation names, meeting day and interval all
-  come from CLAUDE.md, so a rule the project has not written down is a rule it does not
+  come from AGENTS.md, so a rule the project has not written down is a rule it does not
   enforce.
 - It does not judge writing quality, scope or fidelity to the transcript. That is the
   draft-reviewer agent's job, and no script can do it.
@@ -80,4 +80,4 @@ another sentence to a skill file:
 3. Add a case to `tests/test_check_draft.py` in the pipeline repo — one that fails
    before your change and passes after.
 4. If the rule needs a project value (a name, a day, a threshold), read it from
-   CLAUDE.md. Never hardcode it.
+   AGENTS.md. Never hardcode it.

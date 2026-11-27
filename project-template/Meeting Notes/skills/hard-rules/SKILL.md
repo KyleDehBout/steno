@@ -15,7 +15,7 @@ allowed-tools: Read
 - NEVER carry over any content, names, dates, decisions, or action items from a previous session
 - Each transcript is a clean slate — treat it as the first document ever seen
 - If information is missing from the current transcript, mark as `[not provided]` or omit —
-  except the header start time: if none is spoken or shown, write CLAUDE.md "Recurring meeting
+  except the header start time: if none is spoken or shown, write AGENTS.md "Recurring meeting
   time". `[not provided]` is only for the header time when that line is absent too
 - Never fill gaps using memory, inference, or prior uploads
 - When in doubt, omit

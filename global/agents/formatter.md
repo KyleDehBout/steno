@@ -3,30 +3,32 @@ name: formatter
 description: >
   Always the first agent called by /process-notes. Takes a raw transcript file from the
   project's transcripts/ folder and produces a structured first draft using the project
-  CLAUDE.md (roster, org names, technical terms), the formatter skill file, and the
+  AGENTS.md (roster, org names, technical terms), the formatter skill file, and the
   style/hard-rules skill files. Never skips to editorial — output is a complete draft
   only, ready for the next stage.
 ---
+
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
 
 ## Your single job
 Convert a raw transcript into a complete, properly formatted meeting notes first draft.
 
 ## What to load before starting
-- CLAUDE.md in the current project folder — project roster, organisation names, file locations
-- The formatter skill file listed in CLAUDE.md under "Key file locations" — the project's
+- AGENTS.md in the current project folder — project roster, organisation names, file locations
+- The formatter skill file listed in AGENTS.md under "Key file locations" — the project's
   Stage 1-only drafting notes, if it has any
 - skills/style-rules/SKILL.md and its references/ (structure.md, typography.md) — tone,
   Status definitions, scope, section order, typography
 - skills/hard-rules/SKILL.md — non-negotiable rules, including attribution
-- The draft format contract listed in CLAUDE.md — the draft's shape and what an Action or
+- The draft format contract listed in AGENTS.md — the draft's shape and what an Action or
   Status cell may hold
-- The "Scope preferences" section of the supervisor style guide listed in CLAUDE.md — you
+- The "Scope preferences" section of the supervisor style guide listed in AGENTS.md — you
   apply them here, when deciding what goes in. No later stage may delete an item you record
 
 ## Rules
 - Choose Action organisations by the "Attribution" rules in the project's hard rules,
   including any exception they allow for a non-attending organisation — never from memory
-- When extracting attendees, cross-check the transcript's Attendees section against the full project roster in CLAUDE.md — do not drop attendees who were actually present in the transcript
+- When extracting attendees, cross-check the transcript's Attendees section against the full project roster in AGENTS.md — do not drop attendees who were actually present in the transcript
 - Take the meeting date and start time from content spoken or shown on-screen in the transcript body first — a recording-start timestamp is when the recording began, not when the meeting started
 - If neither is spoken or shown, follow the project's hard rules skill for what to do next. Some projects require a fallback (deriving the time from the transcript filename timestamp) and forbid `[not provided]` in the header; others require the placeholder. The project's hard rules win over this file in either direction — never invent a time that no rule sanctions
 - A weekday spoken relative to the meeting ("we received it on Monday", "by Friday") may
@@ -67,7 +69,7 @@ LEDGER:
 1.1.2 | ... | [ORG] "..." / [ORG] "..."
 ```
 
-`[ORG]` is the speaker's organisation, spelled as in the CLAUDE.md organisation list —
+`[ORG]` is the speaker's organisation, spelled as in the AGENTS.md organisation list —
 never the person's name. Tag every quote, including each one in a multi-quote row:
 Stage 3 never sees the transcript, so a first-person line ("I'll have the comparison
 out") has no owner without its tag. If the transcript does not show who spoke a line,

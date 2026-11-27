@@ -11,6 +11,8 @@ description: >
   move of the final file to the issued archive, is /apply-learning's.
 ---
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Your job in /learn
 Generate the qa-session.html file. That is all. Do not run diffs in the terminal.
 Do not ask questions in the terminal. The form does everything.
@@ -21,7 +23,7 @@ Compare the pipeline draft /learn selected (this meeting's draft in output/, nam
 run folder yourself: another meeting may be in flight, and its files are not this one's.
 Extract all differences internally. Categorise each one. Do not print anything to terminal yet.
 
-Also read CLAUDE.md to get the project name for the SESSION_DATA.
+Also read AGENTS.md to get the project name for the SESSION_DATA.
 
 Diff categories:
 - WORDING: phrase reworded for clarity, tone, or preference
@@ -37,18 +39,18 @@ Diff categories:
   instructions, not a new rule
 - CHECK: a mechanical rule missed twice or more — the fix is a check in check_draft.py
 
-Target file mapping. Resolve every path from "Key file locations" in CLAUDE.md — the
+Target file mapping. Resolve every path from "Key file locations" in AGENTS.md — the
 pipeline lives under the project's Meeting Notes folder, so a bare `skills/...` path does
 not resolve. Emit exactly ONE file per change, never "X or its references":
-- WORDING → the supervisor style guide listed in CLAUDE.md, "Recurring corrections"
+- WORDING → the supervisor style guide listed in AGENTS.md, "Recurring corrections"
 - FORMAT → that skill's `references/typography.md`
 - STRUCTURE → that skill's `references/structure.md`
-- ATTRIBUTION / STATUS / SCOPE / HARD-RULE → the hard rules skill file listed in CLAUDE.md
+- ATTRIBUTION / STATUS / SCOPE / HARD-RULE → the hard rules skill file listed in AGENTS.md
 - TERMINOLOGY → the hard rules skill's `references/terminology.md`
-- SUPERVISOR-PREF → the supervisor style guide listed in CLAUDE.md, "Recurring corrections"
+- SUPERVISOR-PREF → the supervisor style guide listed in AGENTS.md, "Recurring corrections"
 - AGENT → the named agent in the pipeline repo's `global/agents/`
 - CHECK → `project-template/Meeting Notes/skills/draft-checks/scripts/check_draft.py`
-  under the "Pipeline repo" path in CLAUDE.md, never the project's copy at "Draft checks
+  under the "Pipeline repo" path in AGENTS.md, never the project's copy at "Draft checks
   scripts": `/sync-pipeline` overwrites that copy
 
 ## Step 1b — Triage before proposing anything
@@ -66,7 +68,7 @@ Sort every difference first:
    proposing anything. If it is there, the category is AGENT, not a new rule — and if it
    is mechanical and has been missed before, CHECK. Name the stage: compare
    `stage-1.md` through `stage-5.md` in the working folder's `runs/<stem>/` subfolder
-   (resolve the working folder from "DOCX working dir" in CLAUDE.md) and find the first
+   (resolve the working folder from "DOCX working dir" in AGENTS.md) and find the first
    file where the text changed. That is the stage that owns it.
 3. **A pattern seen once.** Put it in `patterns[]` (Step 3) and do not propose it.
    `/apply-learning` logs it to "Open patterns" from the paste, and it becomes a proposal
@@ -105,7 +107,7 @@ Only questions where the answer would produce a specific rule. Prioritise broade
 ## Step 2 — Build the session JSON
 
 The form is a fixed page, `qa-session-form.html`, that `generate_qa_form.py` (the
-"Learning form script" listed in CLAUDE.md) fills in. Never write or edit HTML: build
+"Learning form script" listed in AGENTS.md) fills in. Never write or edit HTML: build
 only the session data the page renders and the paste block reports. It is the only place
 the diff data lives.
 
@@ -143,7 +145,7 @@ folder. Use this exact shape:
   ]
 }
 
-Populate project with the project name from CLAUDE.md. Populate stem and meetingNo with
+Populate project with the project name from AGENTS.md. Populate stem and meetingNo with
 the values /learn passed: the run folder's stem and the MEETING NO from its latest stage
 file (an empty string if it had none). /apply-learning cleans up by the stem and numbers
 the archive file by the MEETING NO.
@@ -157,11 +159,11 @@ changes or questions, set that list to [].
 Run, from the folder Claude was launched in (the form has always been written there):
 
 ```bash
-python3 "[Learning form script from CLAUDE.md]" \
+python3 "[Learning form script from AGENTS.md]" \
   --data "[DOCX working dir]/runs/<stem>/qa-session.json"
 ```
 
-If CLAUDE.md has no "Learning form script" line, the script is
+If AGENTS.md has no "Learning form script" line, the script is
 `skills/learning-form/scripts/generate_qa_form.py` in the folder that holds the
 "DOCX working dir" (the Meeting Notes folder); sync delivers it there.
 
