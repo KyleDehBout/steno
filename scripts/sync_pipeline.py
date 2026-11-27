@@ -2,7 +2,7 @@
 """Install or update the pipeline's global agents, commands and project skills.
 
 Usage:
-  sync_pipeline.py --global [--dry-run]
+  sync_pipeline.py --global [--target claude|codex|gemini] [--dry-run]
   sync_pipeline.py --project "<path to project folder>" [--dry-run]
   sync_pipeline.py --global --project "<path>" [--dry-run]
   sync_pipeline.py --project "<path A>" --project "<path B>" [--keep N]
@@ -16,8 +16,11 @@ project ended up with ad-hoc `.pipeline-backup-*` folders beside it.
 This script overwrites, but never silently: every file it replaces is copied into a
 timestamped backup folder first, and it prints exactly what changed.
 
-  --global   copies global/agents/*.md and global/commands/*.md into ~/.claude/
-             backup: ~/.claude/.pipeline-backup-<stamp>/
+  --global   installs the shared agents and commands for each --target tool (see
+             TARGETS below for where each tool's files go)
+             backup: <tool folder>/.pipeline-backup-<stamp>/, e.g. ~/.claude/...
+  --target   claude (default), codex or gemini; repeat it to install for several.
+             claude installs exactly what this script always has.
   --project  copies the skills that carry executable content (draft-checks,
              docx-renderer, pipeline-cleanup, learning-form) into
              <project>/Meeting Notes/skills/
@@ -39,6 +42,7 @@ Exit codes: 0 = done (or nothing to do), 1 = a copy failed, 2 = bad usage.
 """
 import argparse
 import filecmp
+import os
 import re
 import shutil
 import sys
@@ -67,6 +71,66 @@ SKIP_WITHIN_SKILL = (('docx-renderer', 'references'),)
 # in each location. A hand-made backup with any other shape is never pruned.
 BACKUP_NAME = re.compile(r'^\.pipeline-backup-\d{8}-\d{6}$')
 GLOBAL_BACKUP_PARTS = {'agents', 'commands', '.claude'}
+
+# Where each tool keeps its user-level files, checked against each tool's docs in
+# November 2026:
+#   Claude Code  ~/.claude/agents/*.md sub-agents, ~/.claude/commands/*.md slash commands
+#   Codex CLI    $CODEX_HOME (default ~/.codex); sub-agents are TOML files in agents/
+#                with name, description and developer_instructions. Its custom prompts
+#                (~/.codex/prompts) are deprecated in favour of skills, so commands are
+#                not installed there.
+#   Gemini CLI   ~/.gemini/agents/*.md sub-agents with name and description frontmatter,
+#                the same shape as ours, so the files are copied as they are.
+# Each kind maps to (folder under the tool's home, format), or is absent when the tool
+# gets nothing of that kind.
+TARGETS = {
+    'claude': {'home': ('HOME', '.claude'),
+               'kinds': {'agents': ('agents', 'md'), 'commands': ('commands', 'md')}},
+    'codex': {'home': ('CODEX_HOME', '.codex'),
+              'kinds': {'agents': ('agents', 'codex-toml')}},
+    'gemini': {'home': ('HOME', '.gemini'),
+               'kinds': {'agents': ('agents', 'md')}},
+}
+
+
+def target_home(target, home):
+    """The tool's user folder. A tool whose home has its own variable honours it."""
+    variable, folder = TARGETS[target]['home']
+    if variable != 'HOME' and os.environ.get(variable):
+        return Path(os.environ[variable]).expanduser()
+    return home / folder
+
+
+def split_frontmatter(text):
+    """(fields, body) for a file that opens with a --- block of `key: value` lines.
+    A value written `key: >` folds the indented lines under it into one line."""
+    if not text.startswith('---\n'):
+        return {}, text
+    end = text.index('\n---\n', 4)
+    fields, key = {}, None
+    for line in text[4:end].splitlines():
+        if line[:1] in (' ', '\t') and key:
+            fields[key] = (fields[key] + ' ' + line.strip()).strip()
+        elif ':' in line:
+            key, _, value = line.partition(':')
+            key, value = key.strip(), value.strip()
+            fields[key] = '' if value in ('>', '|', '>-', '|-') else value
+    return fields, text[end + 5:].lstrip('\n')
+
+
+def toml_string(value):
+    """A TOML multi-line basic string holding value exactly."""
+    escaped = value.replace('\\', '\\\\').replace('"', '\\"')
+    return '"""\n' + escaped + '"""'
+
+
+def codex_agent(text):
+    """A Codex sub-agent file (TOML) built from one of our agent .md files."""
+    fields, body = split_frontmatter(text)
+    return ('name = %s\ndescription = %s\ndeveloper_instructions = %s\n'
+            % (toml_string(fields['name']).replace('\n', '', 1),
+               toml_string(fields.get('description', '')).replace('\n', '', 1),
+               toml_string(body)))
 PROJECT_BACKUP_PARTS = {'skills'}
 
 
@@ -82,9 +146,12 @@ class Sync:
         self.unchanged = 0
         self.failed = []
 
-    def copy(self, source, target, backup_root, relative):
-        """Copy one file, backing up any file it replaces."""
-        if target.exists() and filecmp.cmp(source, target, shallow=False):
+    def copy(self, source, target, backup_root, relative, content=None):
+        """Copy one file, backing up any file it replaces. With content, write that
+        text instead of the source's bytes (a file converted for another tool)."""
+        if target.exists() and (
+                target.read_text(encoding='utf-8') == content if content is not None
+                else filecmp.cmp(source, target, shallow=False)):
             self.unchanged += 1
             return
 
@@ -99,7 +166,10 @@ class Sync:
                 backup.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(target, backup)
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
+            if content is None:
+                shutil.copy2(source, target)
+            else:
+                target.write_text(content, encoding='utf-8')
         except OSError as error:
             self.failed.append('%s: %s' % (relative, error))
             return
@@ -107,17 +177,24 @@ class Sync:
         (self.updated if action == 'update' else self.copied).append(relative)
 
 
-def sync_global(sync, home):
-    claude = home / '.claude'
-    backup_root = claude / ('.pipeline-backup-%s' % stamp())
+def sync_global(sync, home, target='claude'):
+    tool_home = target_home(target, home)
+    backup_root = tool_home / ('.pipeline-backup-%s' % stamp())
 
     for kind in ('agents', 'commands'):
+        if kind not in TARGETS[target]['kinds']:
+            continue
+        folder, form = TARGETS[target]['kinds'][kind]
         source_dir = REPO / 'global' / kind
         if not source_dir.is_dir():
             continue
         for source in sorted(source_dir.glob('*.md')):
-            relative = Path(kind) / source.name
-            sync.copy(source, claude / relative, backup_root, relative)
+            if form == 'codex-toml':
+                relative = Path(folder) / (source.stem + '.toml')
+                content = codex_agent(source.read_text(encoding='utf-8'))
+            else:
+                relative, content = Path(folder) / source.name, None
+            sync.copy(source, tool_home / relative, backup_root, relative, content)
 
     return backup_root
 
@@ -238,7 +315,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description='Install or update pipeline agents, commands and skills.')
     parser.add_argument('--global', dest='do_global', action='store_true',
-                        help='sync global agents and commands into ~/.claude/')
+                        help='install the shared agents and commands for each --target')
+    parser.add_argument('--target', action='append', choices=sorted(TARGETS),
+                        help='tool to install for: claude (default), codex or gemini; '
+                             'repeatable')
     parser.add_argument('--project', action='append', default=[],
                         help='project root or its Meeting Notes folder (repeatable)')
     parser.add_argument('--all-projects', action='store_true',
@@ -253,6 +333,9 @@ def main(argv=None):
         parser.error('pass --global, --project <path>, --all-projects, or a mix')
     if args.keep < 1:
         parser.error('--keep must be 1 or more')
+    if args.target and not args.do_global:
+        parser.error('--target picks where --global installs; pass --global with it')
+    targets = list(dict.fromkeys(args.target or ['claude']))
 
     # Resolve every project first, so a bad path stops before anything is written.
     notes_folders = []
@@ -270,11 +353,14 @@ def main(argv=None):
     prune = []
 
     if args.do_global:
-        print('Global  : %s' % (Path.home() / '.claude'))
-        backup_root = sync_global(sync, Path.home())
-        backups.append(backup_root)
-        sync_repo_local(sync, backup_root)
-        prune.append((backup_root.parent, GLOBAL_BACKUP_PARTS))
+        for target in targets:
+            print('Global  : %s (%s)' % (target_home(target, Path.home()), target))
+            backup_root = sync_global(sync, Path.home(), target)
+            backups.append(backup_root)
+            if target == 'claude':
+                # The repo's own .claude/commands copy exists for Claude Code only.
+                sync_repo_local(sync, backup_root)
+            prune.append((backup_root.parent, GLOBAL_BACKUP_PARTS))
 
     for notes in notes_folders:
         print('Project : %s' % notes)
