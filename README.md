@@ -1,6 +1,6 @@
 # Steno
 
-Steno is a meeting notes pipeline for AI coding agents (Claude Code, Codex CLI and Gemini CLI) that transforms raw meeting transcripts into polished, professionally formatted meeting notes — and gets better with every correction your supervisor makes.
+Steno is a meeting notes pipeline for AI coding agents (Claude Code, Codex CLI and Gemini CLI) that transforms raw meeting transcripts into polished, professionally formatted meeting notes — and gets better with every correction you make.
 
 ## What it does
 
@@ -16,7 +16,7 @@ Steno is a meeting notes pipeline for AI coding agents (Claude Code, Codex CLI a
 
 ## How the pipeline improves over time
 
-Every correction your supervisor makes becomes a rule. Rules accumulate in project-level skill files and a supervisor style guide. After enough repetitions, patterns promote to permanent hard rules. The pipeline that formats meeting #20 is meaningfully better than the one that formatted meeting #1.
+Every correction you make becomes a rule. Rules accumulate in project-level skill files and a supervisor style guide. After enough repetitions, patterns promote to permanent hard rules. The pipeline that formats meeting #20 is meaningfully better than the one that formatted meeting #1.
 
 ## What you get per project
 

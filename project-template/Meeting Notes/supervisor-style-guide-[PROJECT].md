@@ -1,7 +1,7 @@
 # Supervisor style guide — [PROJECT NAME]
 
 ## Purpose
-This file records every correction your supervisor makes to issued meeting notes.
+This file records every correction you make to issued meeting notes.
 It is read by the supervisor-alignment agent on every /process-notes run and updated
 automatically by /apply-learning after every /learn cycle.
 
