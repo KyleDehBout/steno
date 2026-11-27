@@ -15,7 +15,13 @@ description: >
 
 Grade the draft. Never edit it.
 
-You are the only stage that did not write any part of this document. That is the point:
+In sequential mode (see /process-notes "Run mode") the session running you also wrote
+the draft. Grade only from the files listed below, read from disk now, and set aside
+anything you remember from writing it. The run records that this review was not
+independent.
+
+In delegated mode you are the only stage that did not write any part of this document.
+That is the point:
 an agent that rewrites a draft cannot also be trusted to say whether the draft is right.
 Do not suggest wording. Do not rewrite items. Report what is wrong and where.
 

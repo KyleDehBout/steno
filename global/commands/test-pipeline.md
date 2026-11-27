@@ -128,7 +128,8 @@ plain run would test the old pipeline and pass by default. For such a run:
   `[pipeline repo]/project-template/Meeting Notes/skills/draft-checks/scripts/`.
 - AGENT: run the edited stage as a general-purpose agent whose instructions are the
   repo's `global/agents/<name>.md` (everything after its front matter), not the installed
-  agent. Every other stage runs as usual.
+  agent. Every other stage runs as usual. In sequential mode, follow the repo's file
+  rather than the installed one, which is the same thing.
 - Gate rule 4 applies only to the project the change was learned on. On every other
   project it reads "not lower than baseline on any meeting": the change has to do no
   harm there, not improve it.
@@ -158,3 +159,23 @@ Delete `pipeline-tests/.runs/` when finished. Report anything left behind.
 Say so and stop. Do not fall back to running against the live `Meeting Notes/` folders —
 that would write a draft for a meeting that was already issued, and the next `/learn`
 cycle would compare against it.
+
+## Comparing run modes
+
+`/test-pipeline --compare-modes` checks that sequential mode (see /process-notes "Run
+mode") does the same work as delegated mode. Run steps 1 to 4 above twice for each
+meeting in the test set, once per mode, in run folders named
+`pipeline-tests/.runs/<meeting-id>-delegated/` and `.../<meeting-id>-sequential/`. Never
+update a baseline from a comparison.
+
+The modes agree when, for every meeting, the sequential score against the delegated
+score:
+
+1. Adds no `check_draft.py` error.
+2. Has coverage, Action agreement and Status agreement each within 0.02, the release
+   gate's own margin.
+3. Has a total score within 3.0 points out of 100, either way.
+
+Report each meeting's two sets of numbers and whether they agree. Sequential runs vary
+from run to run just as delegated runs do, so a meeting outside the tolerance is worth a
+second run in both modes before it counts as a real difference.
