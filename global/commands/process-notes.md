@@ -1,8 +1,10 @@
 # Process meeting notes
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Before starting
-Load CLAUDE.md — project roster, org names, and all file locations.
-All file paths used in this pipeline are read from CLAUDE.md under "Key file locations".
+Load AGENTS.md — project roster, org names, and all file locations.
+All file paths used in this pipeline are read from AGENTS.md under "Key file locations".
 
 Each meeting gets its own run folder, `[DOCX working dir]/runs/<stem>/`, where `<stem>`
 is the transcript's filename without its extension (`transcript-2026-10-08.txt` →
@@ -64,25 +66,25 @@ share a timestamp, take the one whose name sorts last.
   (Say this even when the folder contains files, if none of them are candidates — name the
   files that were skipped and why.)
 
-- If the DOCX blank template listed in CLAUDE.md does not exist on disk:
+- If the DOCX blank template listed in AGENTS.md does not exist on disk:
   Print "DOCX blank template not found at [path] — Stage 6 cannot render. Run
   setup_docx_renderer.py before /process-notes."
   Stop. Do not proceed. Stage 6 would fail after five stages of work have already run.
 
-- If `check_draft.py` is not present at the "Draft checks scripts" path in CLAUDE.md:
+- If `check_draft.py` is not present at the "Draft checks scripts" path in AGENTS.md:
   Print "Draft checks script not found at [path] — run /sync-pipeline to install it."
   Stop. Do not proceed. Running without it silently removes both mechanical gates.
 
-- If the "Draft format contract" file listed in CLAUDE.md does not exist on disk:
+- If the "Draft format contract" file listed in AGENTS.md does not exist on disk:
   Print "Draft format contract not found at [path] — run /sync-pipeline to install it."
   Stop. Do not proceed. Stage 1 is told to write to a contract it cannot read, and every
   later check is against a format nothing defined.
 
 ### Warnings (collect all, then ask once):
-- CLAUDE.md roster contains a `[Name]` placeholder → "Roster has placeholder entries — attribution validation will be unreliable."
-- The formatter skill file (listed in CLAUDE.md) contains `[TO BE FILLED IN]` → "Formatter skill file has unfilled sections — output quality may be low."
-- The style rules skill file (listed in CLAUDE.md) contains `[TO BE FILLED IN]` → "Style rules skill file has unfilled sections — output quality may be low."
-- The humanizer skill file (listed in CLAUDE.md) is missing, or its `references/` folder is empty → "Humanizer skill not found — Stage 2 will run the editorial pass only."
+- AGENTS.md roster contains a `[Name]` placeholder → "Roster has placeholder entries — attribution validation will be unreliable."
+- The formatter skill file (listed in AGENTS.md) contains `[TO BE FILLED IN]` → "Formatter skill file has unfilled sections — output quality may be low."
+- The style rules skill file (listed in AGENTS.md) contains `[TO BE FILLED IN]` → "Style rules skill file has unfilled sections — output quality may be low."
+- The humanizer skill file (listed in AGENTS.md) is missing, or its `references/` folder is empty → "Humanizer skill not found — Stage 2 will run the editorial pass only."
 - More than one candidate transcript is present → "N transcripts present — only the most recent ([filename]) will be processed."
 - The output folder already contains a draft whose name or content matches the transcript about to be processed → "[filename] appears to have been processed already — running again will produce a duplicate draft."
 - `[DOCX working dir]/runs/<stem>/` already holds files for the transcript about to be processed → "[stem] has been run before — its run folder will be replaced." Other meetings' run folders are not a warning: they are meetings waiting for `/learn`.
@@ -123,17 +125,17 @@ The Stage 1 `LEDGER:` block is not a NOTE line — keep it, save it to
 `runs/<stem>/ledger.md`, and pass it to Stage 5.
 
 ### Stage 1 — formatter
-Find the most recent file in the transcripts folder listed in CLAUDE.md.
+Find the most recent file in the transcripts folder listed in AGENTS.md.
 
 Files to pass to the formatter agent:
-- CLAUDE.md
-- The formatter skill file listed in CLAUDE.md
-- The style rules skill file listed in CLAUDE.md
+- AGENTS.md
+- The formatter skill file listed in AGENTS.md
+- The style rules skill file listed in AGENTS.md
 - The style rules skill references/ subfolder (structure.md and typography.md, at the same path as the style rules skill)
-- The hard rules skill file listed in CLAUDE.md
+- The hard rules skill file listed in AGENTS.md
 - The hard rules skill references/ subfolder (terminology.md, at the same path as the hard rules skill)
-- The draft format contract listed in CLAUDE.md
-- The supervisor style guide listed in CLAUDE.md — the formatter applies its Scope
+- The draft format contract listed in AGENTS.md
+- The supervisor style guide listed in AGENTS.md — the formatter applies its Scope
   preferences here, because Stage 4 may not delete an item
 
 Receive a complete first draft plus a `LEDGER:` block.
@@ -143,12 +145,12 @@ Write the draft to `runs/<stem>/stage-1.md` and the ledger to `runs/<stem>/ledge
 Files to pass to the editorial-qa agent:
 - Stage 1 draft
 - The Stage 1 ledger — it may not delete an item that appears there
-- CLAUDE.md
-- The style rules skill file listed in CLAUDE.md
+- AGENTS.md
+- The style rules skill file listed in AGENTS.md
 - The style rules typography reference (at the same path as the style rules skill)
-- The hard rules skill file listed in CLAUDE.md
+- The hard rules skill file listed in AGENTS.md
 - The hard rules terminology reference (at the same path as the hard rules skill)
-- The humanizer skill file listed in CLAUDE.md
+- The humanizer skill file listed in AGENTS.md
 - The humanizer references/ subfolder (at the same path as the humanizer skill)
 
 The agent runs two passes: editorial sharpening, then AI-writing cleanup scoped by the
@@ -158,12 +160,12 @@ Receive sharpened draft plus EDITORIAL NOTE and HUMANIZER NOTE.
 Write it to `runs/<stem>/stage-2.md`.
 
 ### Stage 2.5 — first mechanical check
-Run, from the "Draft checks scripts" path in CLAUDE.md:
+Run, from the "Draft checks scripts" path in AGENTS.md:
 
 ```bash
 python3 "[draft checks scripts]/check_draft.py" "[working dir]/runs/<stem>/stage-2.md" \
-  --claude-md "[path to CLAUDE.md]" --stage 2 \
-  --scorecard "[pipeline scorecard from CLAUDE.md]" \
+  --agents-md "[path to AGENTS.md]" --stage 2 \
+  --scorecard "[pipeline scorecard from AGENTS.md]" \
   --json "[working dir]/runs/<stem>/checks-stage-2.json"
 ```
 
@@ -182,24 +184,24 @@ Files to pass to the discipline-checker agent:
 - The Stage 2.5 check findings, if any
 - `runs/<stem>/ledger.md` — its verbatim quotes are the agent's only evidence of who owns
   each action; it never sees the transcript
-- CLAUDE.md
-- The hard rules skill file listed in CLAUDE.md
+- AGENTS.md
+- The hard rules skill file listed in AGENTS.md
 - The hard rules terminology reference (at the same path as the hard rules skill)
-- The supervisor style guide listed in CLAUDE.md — a project's joint-attribution rule may
+- The supervisor style guide listed in AGENTS.md — a project's joint-attribution rule may
   live under its "Promoted rules"
-- The draft format contract listed in CLAUDE.md — rule 7 defines the Action and Status cells
+- The draft format contract listed in AGENTS.md — rule 7 defines the Action and Status cells
 
 Receive corrected draft plus DISCIPLINE NOTE. Write it to `runs/<stem>/stage-3.md`.
 
 ### Stage 4 — supervisor-alignment
 Files to pass to the supervisor-alignment agent:
 - Stage 3 draft
-- CLAUDE.md
-- The supervisor style guide file listed in CLAUDE.md
-- The hard rules skill file listed in CLAUDE.md
+- AGENTS.md
+- The supervisor style guide file listed in AGENTS.md
+- The hard rules skill file listed in AGENTS.md
 
 Agent applies manually seeded preferences always, and recurring corrections once the
-threshold in CLAUDE.md is reached.
+threshold in AGENTS.md is reached.
 Receive final draft. Write it to `runs/<stem>/stage-4.md`.
 
 ### Stage 4.5 — second mechanical check (blocking)
@@ -208,8 +210,8 @@ and add the ledger so a dropped item is caught here rather than left to judgemen
 
 ```bash
 python3 "[draft checks scripts]/check_draft.py" "[working dir]/runs/<stem>/stage-4.md" \
-  --claude-md "[path to CLAUDE.md]" --ledger "[working dir]/runs/<stem>/ledger.md" \
-  --stage 4 --scorecard "[pipeline scorecard from CLAUDE.md]" \
+  --agents-md "[path to AGENTS.md]" --ledger "[working dir]/runs/<stem>/ledger.md" \
+  --stage 4 --scorecard "[pipeline scorecard from AGENTS.md]" \
   --json "[working dir]/runs/<stem>/checks-stage-4.json"
 ```
 
@@ -239,7 +241,7 @@ Files to pass to the draft-reviewer agent:
 - The transcript (Stage 5 is the only stage after Stage 1 that sees it)
 - `runs/<stem>/ledger.md`
 - `runs/<stem>/stage-4.md`
-- CLAUDE.md, the hard rules skill and the style rules skill
+- AGENTS.md, the hard rules skill and the style rules skill
 
 The reviewer never edits. It returns `REVIEW: PASS`, or `REVIEW: FAIL` with findings
 routed to a stage.
@@ -255,7 +257,7 @@ Write the reviewed draft to `runs/<stem>/stage-5.md`.
 ### Stage 6 — docx-renderer
 Files to pass to the docx-renderer agent:
 - Stage 5 final draft (markdown)
-- CLAUDE.md
+- AGENTS.md
 
 Agent runs the renderer skill's `render.py`, which clones the blank template, builds and
 splices the body XML, repacks, validates, and saves the output file. It returns
@@ -280,7 +282,7 @@ real renderer crash for weeks.
 |------|-------------|--------------|
 | `draft` | The draft: an attendee row without 3 fields, a sub-item or bullet with the wrong cells, a line outside the format, a bullet below `MEETINGS:`, a control character or non-UTF-8 bytes, a typed number in an item or heading, two sections with the same title. The reason names `draft line N` of `stage-5.md`. | The owning stage (below), then repair |
 | `input` | The draft path given to the renderer does not exist. | You: re-run Stage 6 on `runs/<stem>/stage-5.md`, writing it from `stage-4.md` first if it is missing (Stage 5 never edits). Counts as a render attempt. |
-| `config` | The project's blank template, the `DOCX blank template` line in CLAUDE.md, or `constants.json` (a missing key, a non-numeric value, a `num_id` not in the template, column widths that do not add up). | The user. Stop (below). |
+| `config` | The project's blank template, the `DOCX blank template` line in AGENTS.md, or `constants.json` (a missing key, a non-numeric value, a `num_id` not in the template, column widths that do not add up). | The user. Stop (below). |
 | `install` | `render.py` or a script it runs, or `check_draft.py`, is missing. | The user: `/sync-pipeline`. Stop. |
 | `system` | A file could not be written (disk full, permissions). | The user. Stop. |
 | `renderer` | A bug in the renderer scripts. | The user, with the message. Stop. |
@@ -333,12 +335,12 @@ Then render it with:
   python3 "<DOCX renderer scripts>/render.py" "<that stage-5.md>" --project "<Meeting Notes folder>" --out "<output folder>/<PROJECT>-Meeting-Notes-YYYY-MM-DD.docx"
 ```
 
-with the paths filled in from CLAUDE.md, and the fix by kind:
+with the paths filled in from AGENTS.md, and the fix by kind:
 - `config`: what the reason names. A missing template, missing or wrong constants, an
   undeclared `num_id` or column widths that do not add up are re-derived from a branded
   .docx with `python3 "<DOCX renderer scripts>/setup_docx_renderer.py" "<branded .docx>"
   "<PROJECT>" "<Meeting Notes folder>" --force` (it backs up what it replaces). A missing
-  `DOCX blank template` line goes under "Key file locations" in CLAUDE.md.
+  `DOCX blank template` line goes under "Key file locations" in AGENTS.md.
 - `install`: run `/sync-pipeline`.
 - `system`: free disk space or fix the folder's permissions.
 - `renderer`: a renderer bug; keep the message and report it. Do not work around it.

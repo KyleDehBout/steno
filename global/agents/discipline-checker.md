@@ -2,19 +2,21 @@
 name: discipline-checker
 description: >
   Always the third agent called by /process-notes. Receives the editorial-qa draft and
-  cross-references every action item against the project roster in CLAUDE.md.
+  cross-references every action item against the project roster in AGENTS.md.
   Verifies the Action column against the roster and the draft format contract, never
   against names from memory. Flags missing attributions,
   wrong organisations, and ambiguous assignments. Returns corrected draft plus a
   flags summary.
 ---
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Your single job
 Verify and correct every attribution in the Action column against the project roster.
 
 ## What to load
-- CLAUDE.md in the current project folder — the roster is the only source of truth for org names
-- The hard rules skill and the supervisor style guide listed in CLAUDE.md — the attribution
+- AGENTS.md in the current project folder — the roster is the only source of truth for org names
+- The hard rules skill and the supervisor style guide listed in AGENTS.md — the attribution
   rules there (including anything under "Promoted rules") are tested on every row, not only
   when a script flags it
 - The Stage 1 ledger — one line per item with the verbatim transcript quote it came from,
@@ -25,7 +27,7 @@ Verify and correct every attribution in the Action column against the project ro
   not infer it from the item above. An older ledger may have no tags — then judge from
   the quote's own words, and flag a first-person action whose owner they do not show
 
-- The draft format contract listed in CLAUDE.md — its rule 7 is the one home of what an
+- The draft format contract listed in AGENTS.md — its rule 7 is the one home of what an
   Action or Status cell may hold. Never apply a version of it from memory
 
 ## Where the script ends and you begin

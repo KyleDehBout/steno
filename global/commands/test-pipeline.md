@@ -1,5 +1,7 @@
 # Test pipeline
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 Run the pipeline against past meetings and score the result against what the supervisor
 actually issued. Use it before trusting any change to an agent, a skill rule or a check.
 
@@ -49,12 +51,12 @@ For each meeting folder, in order:
 1. Create `pipeline-tests/.runs/<meeting-id>/`. Everything below happens there. Never
    write to `Meeting Notes/transcripts/`, `output/`, `intake/` or `working/`.
 
-2. **Write an override CLAUDE.md into the run folder and pass that file to every stage,
-   in place of the project's own.** Every agent resolves its paths from CLAUDE.md, so
+2. **Write an override AGENTS.md into the run folder and pass that file to every stage,
+   in place of the project's own.** Every agent resolves its paths from AGENTS.md, so
    redirecting them in prose here would not redirect them at all — the agents would read
    the real one and write into the live folders.
 
-   Copy the project CLAUDE.md and change exactly five lines:
+   Copy the project AGENTS.md and change exactly five lines:
 
    ```
    - Transcripts: pipeline-tests/<meeting-id>/transcript/
@@ -71,7 +73,7 @@ For each meeting folder, in order:
    run, and a test run must never write one into the live scorecard.
 
 3. Run Stages 1 to 5 of `/process-notes` exactly as written, passing the override
-   CLAUDE.md wherever a stage is told to pass CLAUDE.md. Skip Stage 6 — rendering is
+   AGENTS.md wherever a stage is told to pass AGENTS.md. Skip Stage 6 — rendering is
    checked by `validate.py` and adds nothing here.
 
    If any stage writes outside `pipeline-tests/`, stop the whole run and report it. That
@@ -116,9 +118,9 @@ numbers are.
 installed agents and each project's `check_draft.py` are still the old ones then, so a
 plain run would test the old pipeline and pass by default. For such a run:
 
-- Use each listed project's own root, CLAUDE.md and `pipeline-tests/`, not the current
+- Use each listed project's own root, AGENTS.md and `pipeline-tests/`, not the current
   project's.
-- CHECK: in the override CLAUDE.md, also change the "Draft checks scripts" line to
+- CHECK: in the override AGENTS.md, also change the "Draft checks scripts" line to
   `[pipeline repo]/project-template/Meeting Notes/skills/draft-checks/scripts/`.
 - AGENT: run the edited stage as a general-purpose agent whose instructions are the
   repo's `global/agents/<name>.md` (everything after its front matter), not the installed
@@ -131,7 +133,7 @@ plain run would test the old pipeline and pass by default. For such a run:
 ## Recording the result
 
 Append one line per meeting to the "Test runs" table in the scorecard listed in the
-project's own CLAUDE.md (not the override), matching its seven columns:
+project's own AGENTS.md (not the override), matching its seven columns:
 
 ```
 | [YYYY-MM-DD] | [meeting id] | [score] | [coverage] | [action agreement] | [status agreement] | [what changed since the last run] |

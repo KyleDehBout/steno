@@ -1,13 +1,15 @@
 # Audit pipeline learning — Steno
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## What this does
 Summarises everything the pipeline has learned, rejected, and promoted across all
 /learn cycles for the current project. Project state (folders, skill files still holding
 placeholders, renderer, checks, humanizer version) is /status's.
 
 ## Before starting
-Load CLAUDE.md to get the project name and file locations.
-Load the pipeline memory file listed in CLAUDE.md under "Key file locations".
+Load AGENTS.md to get the project name and file locations.
+Load the pipeline memory file listed in AGENTS.md under "Key file locations".
 
 ## What to read and count
 
@@ -20,7 +22,7 @@ Load the pipeline memory file listed in CLAUDE.md under "Key file locations".
   in its "Dates seen" cell. Its status starts with one of `watching`, `promoted` or
   `blocked`. List every `promoted` row under PROMOTED, every `blocked` row with its
   reason under BLOCKED, and any `watching` row whose sightings already reach the
-  "Supervisor activation threshold" in CLAUDE.md (default 3) as missed promotions. An
+  "Supervisor activation threshold" in AGENTS.md (default 3) as missed promotions. An
   AGENT or CHECK row is never promoted automatically: list one at the threshold as
   awaiting a yes in /apply-learning Step 9, not as missed. PROPOSED lines are not
   approved changes.
@@ -35,7 +37,7 @@ under "Promoted rules". Count the non-comment, non-blank entries under Wording,
 Structural and Scope preferences.
 
 ### From the scorecard
-Read the pipeline scorecard listed in CLAUDE.md and report the last three rows of
+Read the pipeline scorecard listed in AGENTS.md and report the last three rows of
 "Pipeline runs" and "Learn cycles". It is the only record that survives cleanup, so a
 trend there is the only evidence of whether the pipeline is improving.
 

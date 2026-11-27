@@ -10,7 +10,7 @@ One script does the whole render. Your job is to run it and report what it print
 
 ## Run it
 
-Read from CLAUDE.md: `DOCX renderer scripts`, `Output (pipeline drafts)`, and the project
+Read from AGENTS.md: `DOCX renderer scripts`, `Output (pipeline drafts)`, and the project
 name. Take the meeting date from the draft's `HELD ON:` line, as `YYYY-MM-DD`.
 
 ```bash
@@ -30,7 +30,7 @@ Report its last line exactly as printed, and its `repair.py:` line if there is o
 
 | Step | Script | On failure (kind) |
 |------|--------|-------------------|
-| 1 clone | copies CLAUDE.md's `DOCX blank template`, which carries the image headers and footers | template, CLAUDE.md or its template line missing (`config`) |
+| 1 clone | copies AGENTS.md's `DOCX blank template`, which carries the image headers and footers | template, AGENTS.md or its template line missing (`config`) |
 | 2 unpack | `unpack.py` | template is not a valid .docx (`config`) |
 | 3 build body | `build_body_xml.py`, with the project's `references/constants.json` | the draft line at fault (`draft`: attendee fields, unparseable rows, control characters, non-UTF-8 bytes); the constant at fault (`config`); `check_draft.py` missing (`install`); draft file missing (`input`) |
 | 4 splice | `splice_body.py` keeps the root tag, namespaces and `<w:sectPr>` | template has no body or sectPr (`config`); write error (`system`) |

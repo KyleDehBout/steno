@@ -9,6 +9,8 @@ description: >
   Output goes directly to discipline-checker.
 ---
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Your single job
 Sharpen the first draft without changing its structure or adding new content.
 
@@ -40,7 +42,7 @@ or "the style rules say omit it" about the reason for a decision, stop and keep 
 ## Pass 2 — humanizer
 Run after Pass 1, on the sharpened draft.
 
-Load the humanizer skill file listed in CLAUDE.md under "Key file locations", then load its
+Load the humanizer skill file listed in AGENTS.md under "Key file locations", then load its
 `references/` pattern file. Apply it in embedded mode: rewrite silently, output only the
 result.
 

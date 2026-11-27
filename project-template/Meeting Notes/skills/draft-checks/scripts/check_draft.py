@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Validate a meeting-notes markdown draft before it is rendered to .docx.
 
-Usage: check_draft.py <draft.md> [--claude-md <path>] [--ledger <path>] [--json <path>]
+Usage: check_draft.py <draft.md> [--agents-md <path>] [--ledger <path>] [--json <path>]
                       [--scorecard <path> --stage 2|4 [--run-date YYYY-MM-DD]] [--quiet]
 
 The draft format is documented in ../references/draft-format.md. The project roster,
-permitted organisation names and the recurring meeting day are read from CLAUDE.md, so
-this script carries no project data of its own — a rule it cannot source from the
+permitted organisation names and the recurring meeting day are read from the project
+instruction file (AGENTS.md, or CLAUDE.md in a project set up before AGENTS.md existed),
+so this script carries no project data of its own — a rule it cannot source from the
 project is a rule it does not enforce.
 
 Every error below is a rule the pipeline has already broken in production. A script
@@ -98,23 +99,40 @@ class Finding:
         return "%-5s [%s] %s: %s" % (self.level, self.code, where, self.message)
 
 
-# ---------------------------------------------------------------- CLAUDE.md
+# ------------------------------------------------- project instruction file
 
-def find_claude_md(start):
-    """Walk up from the draft looking for the project CLAUDE.md."""
+# The file that holds the roster, organisations and project keys. AGENTS.md is the
+# neutral name every agent tool reads; CLAUDE.md is where projects set up before it
+# keep them. At one folder level AGENTS.md wins, so a CLAUDE.md stub beside it that
+# only points to AGENTS.md is never read as the project's data.
+INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
+
+# The name of the file the current run read, so a message names the file the user
+# has to open. read_project_file sets it.
+SOURCE_NAME = INSTRUCTION_FILES[0]
+
+
+def find_project_file(start):
+    """Walk up from the draft to the nearest folder holding a project instruction file."""
     for parent in [start.resolve()] + list(start.resolve().parents):
-        candidate = parent / "CLAUDE.md"
-        if candidate.is_file():
-            return candidate
+        for name in INSTRUCTION_FILES:
+            candidate = parent / name
+            if candidate.is_file():
+                return candidate
     return None
 
 
-def read_claude_md(path):
+find_claude_md = find_project_file  # the name before AGENTS.md; kept for callers
+
+
+def read_project_file(path):
     """Extract roster, permitted orgs and optional project keys.
 
     Returns a dict. Missing sections come back empty rather than raising: the checks
     that need them are skipped and reported, so a half-filled project still runs.
     """
+    global SOURCE_NAME
+    SOURCE_NAME = path.name
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
 
@@ -162,6 +180,9 @@ def read_claude_md(path):
 
 
 # ------------------------------------------------------------------ parsing
+
+
+read_claude_md = read_project_file  # the name before AGENTS.md; kept for callers
 
 def parse_draft(text):
     """Parse the draft into a structure. Returns (draft, findings)."""
@@ -371,12 +392,12 @@ def check_header(draft, project, findings):
         value = header.get(key, "")
         if PLACEHOLDER in value and key == "TIME" \
                 and not project["keys"].get("recurring meeting time"):
-            # With no recurring time in CLAUDE.md there is nothing to fall back on, so an
+            # With no recurring time in the project file there is nothing to fall back on, so an
             # unstated start time is genuinely unknown. Failing here could not be repaired.
             findings.append(Finding(
                 "WARN", "PLACEHOLDER", lines.get(key, 0),
-                "TIME is %s — add 'Recurring meeting time' to CLAUDE.md to fill it"
-                % PLACEHOLDER))
+                "TIME is %s — add 'Recurring meeting time' to %s to fill it"
+                % (PLACEHOLDER, SOURCE_NAME)))
         elif PLACEHOLDER in value or not value:
             findings.append(Finding(
                 "ERROR", "PLACEHOLDER", lines.get(key, 0),
@@ -387,7 +408,7 @@ def check_header(draft, project, findings):
     if expected_title and header.get("TITLE") and header["TITLE"] != expected_title:
         findings.append(Finding(
             "ERROR", "TITLE", lines.get("TITLE", 0),
-            "TITLE is %r but CLAUDE.md sets %r" % (header["TITLE"], expected_title)))
+            "TITLE is %r but %s sets %r" % (header["TITLE"], SOURCE_NAME, expected_title)))
 
     held = header.get("HELD ON", "")
     if held and PLACEHOLDER not in held:
@@ -444,14 +465,14 @@ def check_attendees(draft, project, findings):
                 and PLACEHOLDER not in name and PLACEHOLDER not in org):
             findings.append(Finding(
                 "WARN", "EMPTY_TITLE", row["line"],
-                "%r is not on the CLAUDE.md roster and has no title" % name))
+                "%r is not on the %s roster and has no title" % (name, SOURCE_NAME)))
             continue
         if any(not field or PLACEHOLDER in field for field in fields):
             findings.append(Finding(
                 "ERROR", "PLACEHOLDER", row["line"],
                 "attendee row may never contain an empty field or %s — resolve the "
-                "speaker label against the CLAUDE.md roster: %r"
-                % (PLACEHOLDER, row["raw"][:60])))
+                "speaker label against the %s roster: %r"
+                % (PLACEHOLDER, SOURCE_NAME, row["raw"][:60])))
             continue
 
         name, org, _title = fields
@@ -460,12 +481,12 @@ def check_attendees(draft, project, findings):
         person = roster_by_name.get(name)
         if person is None:
             findings.append(Finding("WARN", "UNKNOWN_ATTENDEE", row["line"],
-                                    "%r is not on the CLAUDE.md roster" % name))
+                                    "%r is not on the %s roster" % (name, SOURCE_NAME)))
         elif person["org"].lower() == org.lower() and person["org"] != org:
             findings.append(Finding(
                 "WARN", "ATTENDEE_ORG_CASE", row["line"],
-                "%s is listed as %r — CLAUDE.md spells it %r"
-                % (name, org, person["org"])))
+                "%s is listed as %r — %s spells it %r"
+                % (name, org, SOURCE_NAME, person["org"])))
         elif person["org"] != org:
             findings.append(Finding(
                 "ERROR", "ATTENDEE_ORG", row["line"],
@@ -593,13 +614,13 @@ def _check_cells(row, orgs, canonical, roster_names, first_names, findings):
                 # difference names the right organisation and never blocks a run.
                 findings.append(Finding(
                     "WARN", "ACTION_ORG_CASE", row["line"],
-                    "Action %r — CLAUDE.md spells it %r"
-                    % (part, canonical[part.lower()])))
+                    "Action %r — %s spells it %r"
+                    % (part, SOURCE_NAME, canonical[part.lower()])))
             elif orgs and part not in orgs:
                 findings.append(Finding(
                     "ERROR", "ACTION_UNKNOWN_ORG", row["line"],
                     "Action %r is not one of the organisation names in "
-                    "CLAUDE.md" % part))
+                    "%s" % (part, SOURCE_NAME)))
 
     if status and status not in STATUSES:
         hint = ""
@@ -772,8 +793,8 @@ def check_tail_and_text(draft, project, findings):
         if expected and prepared != expected:
             findings.append(Finding(
                 "ERROR", "PREPARED_BY", draft["prepared_line"],
-                "prepared-by line is %r but CLAUDE.md sets %r"
-                % (prepared, expected)))
+                "prepared-by line is %r but %s sets %r"
+                % (prepared, SOURCE_NAME, expected)))
 
     for line, text in _item_texts(draft):
         if PLACEHOLDER in text:
@@ -967,7 +988,7 @@ def wording_rules(project):
 
     Only the two string-shaped forms are read: `Say "X" not "Y"` and `Never use "Y"`.
     Everything else in the guide is judgement and stays with Stage 4. The guide path in
-    CLAUDE.md starts at the project root, which holds CLAUDE.md or its parent does."""
+    the project file starts at the project root, which holds that file or its parent does."""
     rel = project["keys"].get("supervisor style guide")
     if not rel:
         return []
@@ -1169,8 +1190,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Validate a meeting-notes draft before rendering.")
     parser.add_argument("draft", help="path to the Stage 4 markdown draft")
-    parser.add_argument("--claude-md", help="path to the project CLAUDE.md "
-                                            "(default: search upward from the draft)")
+    parser.add_argument("--agents-md", "--claude-md", dest="agents_md",
+                        help="path to the project instruction file, AGENTS.md or "
+                             "CLAUDE.md (default: search upward from the draft, "
+                             "AGENTS.md first)")
     parser.add_argument("--ledger",
                         help="Stage 1 ledger — error on any item missing from the draft")
     parser.add_argument("--scorecard",
@@ -1190,11 +1213,12 @@ def main(argv=None):
     if not draft_path.is_file():
         sys.exit("error: draft not found: %s" % draft_path)
 
-    claude_path = Path(args.claude_md) if args.claude_md else find_claude_md(draft_path)
-    if claude_path is None or not claude_path.is_file():
-        sys.exit("error: CLAUDE.md not found — pass --claude-md")
+    project_path = (Path(args.agents_md) if args.agents_md
+                    else find_project_file(draft_path))
+    if project_path is None or not project_path.is_file():
+        sys.exit("error: no AGENTS.md or CLAUDE.md found — pass --agents-md")
 
-    project = read_claude_md(claude_path)
+    project = read_project_file(project_path)
     text = draft_path.read_text(encoding="utf-8")
     draft, findings = parse_draft(text)
     check_characters(text, findings)
@@ -1223,11 +1247,13 @@ def main(argv=None):
     if not project["orgs"]:
         findings.append(Finding(
             "WARN", "NO_ORG_LIST", 0,
-            "CLAUDE.md lists no organisation names — Action values were not checked"))
+            "%s lists no organisation names — Action values were not checked"
+            % SOURCE_NAME))
     if not project["roster"]:
         findings.append(Finding(
             "WARN", "NO_ROSTER", 0,
-            "CLAUDE.md has no roster — attendees and speaker names were not checked"))
+            "%s has no roster — attendees and speaker names were not checked"
+            % SOURCE_NAME))
 
     errors = [f for f in findings if f.level == "ERROR"]
     warnings = [f for f in findings if f.level == "WARN"]

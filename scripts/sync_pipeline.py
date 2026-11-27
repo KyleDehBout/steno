@@ -31,7 +31,7 @@ timestamped backup folder first, and it prints exactly what changed.
              made are ever deleted: the exact name pattern, holding only the folders it
              backs up into.
 
-What it never touches: a project's CLAUDE.md, style guide, memory log, scorecard,
+What it never touches: a project's AGENTS.md or CLAUDE.md, style guide, memory log, scorecard,
 formatter skill, style-rules, hard-rules, terminology, or anything under
 docx-renderer/references/. Those are project-owned and carry the supervisor's rules.
 
@@ -47,6 +47,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 PROJECTS_LIST = REPO / 'projects.txt'
+
+# A project's instruction file: AGENTS.md, or CLAUDE.md in a project set up before it.
+INSTRUCTION_FILES = ('AGENTS.md', 'CLAUDE.md')
 
 # Skills whose content is executable or contract-like: the pipeline owns these, and a
 # project that keeps an old copy runs old logic. Skills holding project rules are absent
@@ -137,11 +140,12 @@ def sync_repo_local(sync, backup_root):
 
 
 def is_notes_folder(folder, project_root):
-    """The Meeting Notes folder holds skills/, with CLAUDE.md beside it or in the project
-    root above it (Style B keeps CLAUDE.md inside Meeting Notes, Style A at the root)."""
+    """The Meeting Notes folder holds skills/, with the project instruction file beside
+    it or in the project root above it (Style B keeps it inside Meeting Notes, Style A at
+    the root). That file is AGENTS.md, or CLAUDE.md in a project set up before it."""
     return ((folder / 'skills').is_dir()
-            and ((folder / 'CLAUDE.md').is_file()
-                 or (project_root / 'CLAUDE.md').is_file()))
+            and any((place / name).is_file()
+                    for place in (folder, project_root) for name in INSTRUCTION_FILES))
 
 
 def find_notes(project):

@@ -42,14 +42,24 @@ def build_repo(base):
     return repo
 
 
-def build_project(base, layout, repo):
+# Which instruction files a project holds. 'claude' is a project set up before AGENTS.md;
+# 'both' is a current one, where CLAUDE.md is a stub that only points to AGENTS.md.
+FILE_SETS = ('claude', 'agents', 'both')
+
+
+def build_project(base, layout, repo, files='claude'):
     """A synced-once project: skills present, plus a stale check_draft.py to update."""
     root = os.path.join(base, layout)
     notes = os.path.join(root, 'Meeting Notes')
     os.makedirs(os.path.join(notes, 'skills', 'draft-checks', 'scripts'))
-    claude_md = os.path.join(notes if layout == 'INNER' else root, 'CLAUDE.md')
-    with open(claude_md, 'w', encoding='utf-8') as handle:
-        handle.write('# %s\n- Pipeline repo (for /sync-pipeline): %s\n' % (layout, repo))
+    home_dir = notes if layout == 'INNER' else root
+    data = '# %s\n- Pipeline repo (for /sync-pipeline): %s\n' % (layout, repo)
+    written = {'claude': {'CLAUDE.md': data},
+               'agents': {'AGENTS.md': data},
+               'both': {'AGENTS.md': data, 'CLAUDE.md': '@AGENTS.md\n'}}[files]
+    for name, text in written.items():
+        with open(os.path.join(home_dir, name), 'w', encoding='utf-8') as handle:
+            handle.write(text)
     with open(os.path.join(notes, 'skills', 'draft-checks', 'scripts',
                            'check_draft.py'), 'w') as handle:
         handle.write('# stale\n')
@@ -84,12 +94,12 @@ def synced(notes):
         return handle.read() != '# stale\n'
 
 
-def setup(layout):
+def setup(layout, files='claude'):
     base = tempfile.mkdtemp()
     home = os.path.join(base, 'home')
     os.makedirs(home)
     repo = build_repo(base)
-    root, notes = build_project(base, layout, repo)
+    root, notes = build_project(base, layout, repo, files)
     return base, home, repo, root, notes
 
 
@@ -315,6 +325,28 @@ def test_launcher_runs_sync_for_both_layouts():
             check('launcher %s: live skills updated' % layout, synced(notes), out)
         finally:
             shutil.rmtree(base)
+
+
+def test_every_instruction_file_set_syncs_and_launches():
+    """AGENTS.md only, CLAUDE.md only (a project set up before AGENTS.md), and both: the
+    sync finds the project and the launcher reads the repo path from the real file, never
+    from the CLAUDE.md stub."""
+    for layout in ('INNER', 'OUTER'):
+        for files in FILE_SETS:
+            label = '%s, %s' % (layout, files)
+            base, home, repo, root, notes = setup(layout, files)
+            try:
+                code, out = run(repo, home, '--project', root)
+                check('%s: sync finds the project' % label, code == 0 and synced(notes), out)
+            finally:
+                shutil.rmtree(base)
+            base, home, repo, root, notes = setup(layout, files)
+            try:
+                code, out = run_launcher(base, home, notes, layout)
+                check('%s: launcher syncs and reaches claude' % label,
+                      code == 0 and 'CLAUDE-STARTED' in out and synced(notes), out)
+            finally:
+                shutil.rmtree(base)
 
 
 def test_launcher_skips_sync_when_repo_has_uncommitted_synced_changes():

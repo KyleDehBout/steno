@@ -1,13 +1,15 @@
 # Learn from final issued notes
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Purpose
 Compare what the pipeline produced against the final supervisor-approved version.
 Extract every difference. Propose targeted improvements to skill files and agents.
 Move the final file to the issued archive with correct numbering.
 
 ## Before starting — verify intake
-Load CLAUDE.md to get all file paths.
-Check the intake folder listed in CLAUDE.md for the issued file. Ignore any name that
+Load AGENTS.md to get all file paths.
+Check the intake folder listed in AGENTS.md for the issued file. Ignore any name that
 starts with `.` (`.DS_Store`) or `~$` (a Word lock file), folders and empty files.
 If nothing is left: stop and tell the user "No file found in [intake path] — drop your
 final issued .docx or .pdf there and run /learn again." Say this even when the folder
@@ -39,23 +41,23 @@ Carry the chosen stem and that run's MEETING NO into the form (see below):
 stem's files.
 
 ## Files to load
-- The intake folder listed in CLAUDE.md — the final supervisor-approved version (source of truth)
+- The intake folder listed in AGENTS.md — the final supervisor-approved version (source of truth)
 - The pipeline draft named on the `output:` line of `runs/<stem>/run.txt`, in the output
-  folder listed in CLAUDE.md. If the line is missing, use the draft whose date matches
+  folder listed in AGENTS.md. If the line is missing, use the draft whose date matches
   HELD ON, and ask if more than one does
 - The per-stage drafts `stage-1.md` through `stage-5.md` in `[DOCX working dir]/runs/<stem>/`
-  (resolve the working folder from "DOCX working dir" in CLAUDE.md), and any
+  (resolve the working folder from "DOCX working dir" in AGENTS.md), and any
   `stage-k.attemptN.md` an earlier repair pass left — the draft as each stage left it.
   Comparing consecutive files names the stage that introduced a correction, which is
   what turns it into an AGENT fix instead of another rule
 - `[DOCX working dir]/runs/<stem>/ledger.md` — an item in the ledger but missing from the
   issued file was dropped by a later stage, not by the supervisor
-- The pipeline memory file listed in CLAUDE.md — running learning log, open patterns, and
+- The pipeline memory file listed in AGENTS.md — running learning log, open patterns, and
   open decisions that must be asked again first
-- The pipeline scorecard listed in CLAUDE.md — receives one line per cycle
-- The style rules skill file listed in CLAUDE.md — may receive updates
-- The hard rules skill file listed in CLAUDE.md — may receive updates
-- The supervisor style guide file listed in CLAUDE.md — may receive updates
+- The pipeline scorecard listed in AGENTS.md — receives one line per cycle
+- The style rules skill file listed in AGENTS.md — may receive updates
+- The hard rules skill file listed in AGENTS.md — may receive updates
+- The supervisor style guide file listed in AGENTS.md — may receive updates
 - The pipeline repo's `global/agents/` — agent instructions may receive updates, only
   through `/apply-learning` Step 9 (a shown diff, an explicit yes, and `/test-pipeline`
   on every installed project). Never the installed copies in `~/.claude/agents/`: an
@@ -68,7 +70,7 @@ attribute a correction to a stage, so no AGENT proposals come out of it.
 Before the review, measure how close the pipeline got. Run, from the project root:
 
 ```bash
-python3 "[Draft checks scripts from CLAUDE.md]/score_draft.py" \
+python3 "[Draft checks scripts from AGENTS.md]/score_draft.py" \
   "[DOCX working dir]/runs/<stem>/stage-5.md" "[the issued .docx in intake]" \
   --json "[DOCX working dir]/runs/<stem>/score.json"
 ```

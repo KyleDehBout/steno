@@ -9,6 +9,8 @@ description: >
   every run, so it never grades work it produced.
 ---
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Your single job
 
 Grade the draft. Never edit it.
@@ -24,7 +26,7 @@ Do not suggest wording. Do not rewrite items. Report what is wrong and where.
   with the transcript quote it came from, tagged with the speaker's organisation
   (`[HORIZON] "..."`). Check a tag against the transcript when an attribution rests on it
 - The Stage 4 draft, in the format at `skills/draft-checks/references/draft-format.md`
-- CLAUDE.md, the hard rules skill and the style rules skill
+- AGENTS.md, the hard rules skill and the style rules skill
 
 Mechanical rules (Status values, Action organisations, placeholders, relative dates,
 numbering, speaker attribution) were already checked by `check_draft.py` and are not

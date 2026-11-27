@@ -2,13 +2,15 @@
 name: docx-renderer
 description: >
   Always the sixth and final agent called by /process-notes. Receives the reviewed final
-  draft (markdown, in the project's draft format contract) and CLAUDE.md, after the
+  draft (markdown, in the project's draft format contract) and AGENTS.md, after the
   mechanical checks and the draft-reviewer have both passed on it.
   Runs the DOCX renderer skill's render.py, which clones the blank template, builds and
   splices the body XML, repacks, validates and saves to output/, and reports its result.
   Returns a completion status with the output file path. Do not use for content
   editing — rendering only.
 ---
+
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
 
 ## Your single job
 
@@ -17,7 +19,7 @@ running one script. Do not alter content.
 
 ## Step 1 — Load files
 
-Read from CLAUDE.md under "Key file locations":
+Read from AGENTS.md under "Key file locations":
 - `DOCX renderer skill` — path to SKILL.md
 - `DOCX renderer scripts` — path to the scripts directory
 - `Output (pipeline drafts)` — path to the output folder

@@ -1,5 +1,7 @@
 # apply-learning
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## Trigger
 This command runs automatically when the user pastes a block beginning with
 ==LEARNING_REVIEW== into the terminal. The user does not need to type
@@ -11,8 +13,8 @@ If malformed or incomplete: stop and say "Paste looks incomplete — copy again 
 browser form and paste the full block."
 If valid: proceed silently. Do not echo the block back.
 
-## Step 2 — Load CLAUDE.md
-Read CLAUDE.md to get all file paths before writing anything.
+## Step 2 — Load AGENTS.md
+Read AGENTS.md to get all file paths before writing anything.
 
 ## Step 3.0 — Open a run entry in pipeline memory
 Everything this command does is logged under one dated entry. `/audit` counts run
@@ -20,7 +22,7 @@ entries by their date header and counts approved changes by the CATEGORY tag on 
 line, so a cycle that writes rules to skill files but logs nothing here is invisible
 to `/audit` forever.
 
-Append to the pipeline memory file listed in CLAUDE.md:
+Append to the pipeline memory file listed in AGENTS.md:
 
 ```
 ## [YYYY-MM-DD] — [transcript name from the block header]
@@ -58,13 +60,13 @@ approves the idea, not the shared edit.
 ## Step 3 — Process Section 1: Proposed changes
 For each line marked [APPROVE]:
 - Resolve the target file. The block names a category and a target; turn it into a
-  real path using "Key file locations" in CLAUDE.md, never a bare `skills/...` path:
+  real path using "Key file locations" in AGENTS.md, never a bare `skills/...` path:
   - WORDING → the supervisor style guide, under "Recurring corrections" (see Step 4).
     Never the style rules skill file: it is always on, so one approval there skips the
     threshold.
   - FORMAT → the style rules skill's `references/typography.md`
   - STRUCTURE → that skill's `references/structure.md`
-  - ATTRIBUTION / STATUS / SCOPE / HARD-RULE → the hard rules skill file listed in CLAUDE.md
+  - ATTRIBUTION / STATUS / SCOPE / HARD-RULE → the hard rules skill file listed in AGENTS.md
   - TERMINOLOGY → the hard rules skill's `references/terminology.md`
   - SUPERVISOR-PREF → the supervisor style guide, under "Recurring corrections" (see Step 4)
   - AGENT → the named agent in the pipeline repo's `global/agents/`, never the installed
@@ -97,13 +99,13 @@ For each line marked [NO ANSWER]:
 For each Q&A pair where an answer is not "(no answer)":
 - Read the question and the answer
 - Derive the most specific rule possible from the answer
-- Determine the correct target file using the paths from CLAUDE.md:
-  - Supervisor wording or tone preference → the supervisor style guide listed in CLAUDE.md,
+- Determine the correct target file using the paths from AGENTS.md:
+  - Supervisor wording or tone preference → the supervisor style guide listed in AGENTS.md,
     under **"Recurring corrections"** — never under "Wording preferences"
-  - Formatting detail → the style rules skill references/typography.md (derived from the style rules skill path in CLAUDE.md)
+  - Formatting detail → the style rules skill references/typography.md (derived from the style rules skill path in AGENTS.md)
   - Section ordering or layout → the style rules skill references/structure.md
-  - General style principle → the style rules skill file listed in CLAUDE.md
-  - Absolute rule → the hard rules skill file listed in CLAUDE.md
+  - General style principle → the style rules skill file listed in AGENTS.md
+  - Absolute rule → the hard rules skill file listed in AGENTS.md
   - Technical term → the hard rules skill references/terminology.md
 - Write the derived rule directly to that file — no confirmation needed
 - The rule must be a single actionable sentence, not a summary of the answer
@@ -128,7 +130,7 @@ row (Step 5.5), carries a list of the dates it was seen on:
 The date for this cycle is the block's DATE line (the meeting date), written YYYY-MM-DD.
 A date already in the list is not added again. `supervisor-alignment` applies an entry
 only when its number of distinct dates is at least the "Supervisor activation
-threshold" key in CLAUDE.md (default 3); entries below it wait, whatever the others do.
+threshold" key in AGENTS.md (default 3); entries below it wait, whatever the others do.
 If the same rule is already present, do not duplicate it — add this cycle's date to the
 existing entry.
 
@@ -140,24 +142,24 @@ Work through each field. For any field that is not "none":
 
 New members:
 - Parse name, organisation, title from the value
-- Add a new row to the project roster table in CLAUDE.md
+- Add a new row to the project roster table in AGENTS.md
 - Write directly — no confirmation needed
 
 Departed:
-- Find the matching row in CLAUDE.md project roster
+- Find the matching row in AGENTS.md project roster
 - Remove or annotate as departed with the date
 - Write directly
 
 New orgs:
-- Add to the organisation names list in CLAUDE.md
+- Add to the organisation names list in AGENTS.md
 - Write directly
 
 Scope changes:
-- Append a note to CLAUDE.md under a "Scope notes" section (create if not exists)
+- Append a note to AGENTS.md under a "Scope notes" section (create if not exists)
 - Write directly
 
 New terms:
-- Add each term to the hard rules references/terminology.md (derived from the hard rules skill path in CLAUDE.md)
+- Add each term to the hard rules references/terminology.md (derived from the hard rules skill path in AGENTS.md)
 - Infer the category from the term
 - If category is unclear, add under a new "Other" section
 - Write directly
@@ -191,7 +193,7 @@ A line whose text matches a row's Pattern exactly updates that row: add this cyc
 sits in the supervisor guide's "Recurring corrections", add the date to that entry too.
 A pattern's count is the number of distinct dates in its row — there is no separate
 count to keep in step. The threshold is the "Supervisor activation threshold" key in
-CLAUDE.md (default 3), the same number that gates "Recurring corrections", so a project
+AGENTS.md (default 3), the same number that gates "Recurring corrections", so a project
 sets it once.
 
 Status is one of three words, optionally followed by ` — [note]`:
@@ -242,7 +244,7 @@ These are asked first, at the top of the next review form. A question that has g
 three cycles unanswered is not a form question any more — name it in the summary and
 tell the user to settle it directly.
 
-**3. Scorecard.** Append one line to the pipeline scorecard listed in CLAUDE.md, under
+**3. Scorecard.** Append one line to the pipeline scorecard listed in AGENTS.md, under
 "Learn cycles":
 
 ```
@@ -257,8 +259,8 @@ has only seven columns (a scorecard from before this change), add the five colum
 to the header and separator first, and leave older rows' new cells blank.
 
 ## Step 6 — Move the final file
-Read the "Issued archive" path from CLAUDE.md.
-Check the intake folder (listed in CLAUDE.md) for the issued file. Ignore any name that
+Read the "Issued archive" path from AGENTS.md.
+Check the intake folder (listed in AGENTS.md) for the issued file. Ignore any name that
 starts with `.` (`.DS_Store`) or `~$`, folders and empty files; if none or more than one
 file is left, say so and stop.
 Read the existing filenames in the issued archive and follow the naming convention already
@@ -285,7 +287,7 @@ bash "[MEETING_NOTES_FOLDER]/skills/pipeline-cleanup/cleanup-cycle.sh" "[archive
 If the block has no STEM line, do not guess one: report that cleanup was skipped and
 why, and stop.
 
-Add `--archive "[Issued archive path from CLAUDE.md]"` if the archive is not the default
+Add `--archive "[Issued archive path from AGENTS.md]"` if the archive is not the default
 `Archive/` folder beside the pipeline.
 
 The script deletes only this meeting's files: `working/runs/<stem>/`, the transcript with
@@ -344,7 +346,7 @@ Step 5.5 (a cleanup refusal, say): the proposals are already logged and must not
 
 ## Step 9 — Shared AGENT and CHECK proposals
 An AGENT or CHECK change edits files every installed project runs: the agents and
-`check_draft.py` in the pipeline repo ("Pipeline repo" in CLAUDE.md). A rule learned
+`check_draft.py` in the pipeline repo ("Pipeline repo" in AGENTS.md). A rule learned
 from one project's supervisor can be wrong for another, so nothing reaches the repo
 without the user's yes, and nothing is synced until every project's test set passes.
 The installed projects are the non-comment lines of `[pipeline repo]/projects.txt`. If

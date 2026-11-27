@@ -13,7 +13,7 @@ anything in them. Seed them manually with known preferences and they take effect
 ## What activates at the threshold
 Each "Recurring corrections" entry carries the dates it was seen on. An entry is applied
 once it has been seen on as many distinct dates as "Supervisor activation threshold" in
-CLAUDE.md (default: 3); until then it waits, however many other entries there are. This
+AGENTS.md (default: 3); until then it waits, however many other entries there are. This
 protects against one-off corrections becoming permanent rules prematurely. Approved
 WORDING changes and supervisor preferences go here too, never straight into the
 always-on style rules.

@@ -1,17 +1,19 @@
 # Project status — Steno
 
+> **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
+
 ## What this does
 Prints a snapshot of the current project state: what is in each folder, whether the
 skill files, renderer and checks are ready, and what to do next. What the pipeline has
 learned (the style guide, patterns, recurring corrections, rejected rules) is /audit's.
 
 ## Before starting
-Load CLAUDE.md to get the project name and all file locations.
+Load AGENTS.md to get the project name and all file locations.
 
 ## Check each area
 
 ### Folders
-Using the paths listed in CLAUDE.md, check each folder and note the file count and most recent filename:
+Using the paths listed in AGENTS.md, check each folder and note the file count and most recent filename:
 - Transcripts folder
 - Output folder
 - Intake folder
@@ -19,19 +21,19 @@ Using the paths listed in CLAUDE.md, check each folder and note the file count a
 
 ### Skill file completeness
 Check each of the following files for any remaining `[TO BE FILLED IN]` text,
-using paths derived from CLAUDE.md:
+using paths derived from AGENTS.md:
 - The formatter skill file
 - The style rules skill file
 - The style rules structure reference
 - The style rules typography reference
 - The hard rules terminology reference
 
-Also read `metadata.upstream` from the humanizer skill file listed in CLAUDE.md: the
+Also read `metadata.upstream` from the humanizer skill file listed in AGENTS.md: the
 vendored humanizer version. /learn never writes to that skill, so it is state, not
 learning.
 
 ### DOCX renderer readiness
-Check the "DOCX blank template" path from CLAUDE.md:
+Check the "DOCX blank template" path from AGENTS.md:
 - Present on disk → ✓, and note the date from
   `skills/docx-renderer/references/.rendered.json` if that file exists
 - Missing → ⚠, because Stage 6 will fail after the other five stages have run
@@ -39,10 +41,10 @@ Check the "DOCX blank template" path from CLAUDE.md:
 ### Pipeline checks readiness
 - `check_draft.py` at the "Draft checks scripts" path → ✓ present, or ⚠ missing, in
   which case /process-notes will refuse to start
-- The "Draft format contract" file listed in CLAUDE.md → ✓ present, or ⚠ missing.
+- The "Draft format contract" file listed in AGENTS.md → ✓ present, or ⚠ missing.
   /process-notes blocks on this one too, so a project missing it is not ready no matter
   what else is in place
-- The pipeline scorecard listed in CLAUDE.md → count the rows under "Pipeline runs" and
+- The pipeline scorecard listed in AGENTS.md → count the rows under "Pipeline runs" and
   under "Learn cycles", or ⬜ if the file does not exist yet
 - The "Pipeline tests" folder → count the meeting folders holding both a transcript and
   an issued .docx, or ⬜ if there are none
