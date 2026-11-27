@@ -60,7 +60,7 @@ textarea::placeholder,input::placeholder{color:#bbb}
 
 <div class="summary-card" id="sum-card">
   <div class="summary-header">
-    <h2>Setup complete — paste this into Claude Code</h2>
+    <h2>Setup complete — paste this into your AI agent</h2>
     <div class="btn-group">
       <button class="btn-copy" id="copy-btn" onclick="doCopy()">Copy to clipboard</button>
       <button class="btn-copy-close" id="copy-close-btn" onclick="doCopyAndClose()">Copy &amp; close</button>
@@ -68,8 +68,8 @@ textarea::placeholder,input::placeholder{color:#bbb}
   </div>
   <div class="summary-body">
     <textarea id="summary-out" readonly></textarea>
-    <div class="paste-note">Paste into the Claude Code terminal and press enter. Setup continues automatically — you do not need to run any command.</div>
-    <div class="close-note" id="close-note">Copied. This tab could not close itself — close it manually and paste into Claude Code.</div>
+    <div class="paste-note">Paste into your agent (Claude Code, Codex CLI or Gemini CLI), opened in the Steno folder, and press enter. Setup continues automatically — you do not need to run any command.</div>
+    <div class="close-note" id="close-note">Copied. This tab could not close itself — close it manually and paste into your agent.</div>
     <button class="btn-back" onclick="backToForm()">← Back to form</button>
   </div>
 </div>
@@ -78,7 +78,7 @@ textarea::placeholder,input::placeholder{color:#bbb}
 
 <div class="card top-card">
   <h1>Steno — Project setup</h1>
-  <p id="meta-line">Fill this in, submit, then paste the result into Claude Code.</p>
+  <p id="meta-line">Fill this in, submit, then paste the result into your AI agent.</p>
 </div>
 
 <div class="card">
@@ -121,7 +121,7 @@ textarea::placeholder,input::placeholder{color:#bbb}
 
   <div class="item">
     <div class="qtext">5. Branded .docx to use as the document template</div>
-    <div class="qhint">Any past meeting notes or letterhead. Gives every output your header, footer, and logo. Leave blank if you already uploaded one to Claude Code, or if you have none.</div>
+    <div class="qhint">Any past meeting notes or letterhead. Gives every output your header, footer, and logo. Leave blank if you already gave one to your agent, or if you have none.</div>
     <input type="text" id="p-template" placeholder="/Users/you/Documents/past-minutes.docx">
   </div>
 </div>
@@ -276,7 +276,7 @@ textarea::placeholder,input::placeholder{color:#bbb}
 
   <div class="item">
     <div class="qtext">21. Create a double-click launcher in the project folder</div>
-    <div class="qhint">A .command file that opens Claude Code in the right folder. macOS only.</div>
+    <div class="qhint">A .command file that opens Claude Code in the right folder. Claude Code on macOS only.</div>
     <select id="p-launcher">
       <option value="YES">Yes — create the launcher</option>
       <option value="NO">No</option>
@@ -284,7 +284,7 @@ textarea::placeholder,input::placeholder{color:#bbb}
   </div>
 
   <div class="item">
-    <div class="qtext">22. Anything else Claude should know about this project</div>
+    <div class="qtext">22. Anything else the agent should know about this project</div>
     <div class="qhint">Optional. Free text — scope, quirks, naming conventions, anything unusual.</div>
     <textarea id="p-notes" placeholder="Optional"></textarea>
   </div>

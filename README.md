@@ -1,14 +1,14 @@
 # Steno
 
-Steno is a Claude Code pipeline that transforms raw meeting transcripts into polished, professionally formatted meeting notes — and gets better with every correction your supervisor makes.
+Steno is a meeting notes pipeline for AI coding agents (Claude Code, Codex CLI and Gemini CLI) that transforms raw meeting transcripts into polished, professionally formatted meeting notes — and gets better with every correction your supervisor makes.
 
 ## What it does
 
-1. **`/process-notes`** — Drop a transcript in `transcripts/`, run the command. Six sub-agents take it from transcript to .docx: format, sharpen, validate attributions, apply your supervisor's preferences, review the result against the transcript, and render. Two mechanical checks run in between. A clean draft lands in `output/`.
+1. **`/process-notes`** — Drop a transcript in `transcripts/`, run the command, or ask your agent to process the latest meeting. Six stages take it from transcript to .docx: format, sharpen, validate attributions, apply your supervisor's preferences, review the result against the transcript, and render. Two mechanical checks run in between. A clean draft lands in `output/`.
 
 2. **`/learn`** — Drop your supervisor's corrected version in `intake/`. The pipeline diffs it against what it produced, opens a browser review form, and proposes specific rule updates for you to approve or reject.
 
-3. **`/apply-learning`** — Paste the form output back into Claude Code. Approved rules write directly to the right skill files. The file archives to `Meeting Notes/`. The system improves.
+3. **`/apply-learning`** — Paste the form output back into your agent. Approved rules write directly to the right skill files. The file archives to `Meeting Notes/`. The system improves.
 
 4. **`/test-pipeline`** — Run the pipeline against past meetings and score the result against what your supervisor actually issued. A change to an agent or a rule ships only if the numbers hold or improve.
 
@@ -30,7 +30,8 @@ Every correction your supervisor makes becomes a rule. Rules accumulate in proje
 ## Setup
 
 ### Prerequisites
-- [Claude Code](https://claude.ai/code) installed
+- One of the supported agent tools installed (see **Supported tools** below)
+- Python 3 (3.11 or later to run the tests)
 - A GitHub account (optional, for version control)
 
 ### Install
@@ -51,6 +52,20 @@ Every correction your supervisor makes becomes a rule. Rules accumulate in proje
 Setup installs the shared agents, commands and skills for your tool (`scripts/sync_pipeline.py --target …`) and scaffolds your project folder from the template. It never overwrites a file that already exists.
 
 Optional: before filling in the form, give your agent a past `.docx` set of meeting notes. It reads your roster, organisation names, branding, and style out of the file and reopens the form with those fields already filled in and badged **Prefilled**.
+
+### Supported tools
+
+Steno runs in any of these. Install its agents and skills for each tool you use; you can install for more than one.
+
+| Tool | Install | Run mode | Known limits |
+|---|---|---|---|
+| [Claude Code](https://claude.ai/code) | `python3 scripts/sync_pipeline.py --global --target claude` | Delegated: each stage is its own sub-agent | None. The slash commands (`/process-notes` and so on), the first-run hook and the macOS launcher are Claude Code only |
+| [Codex CLI](https://github.com/openai/codex) | `python3 scripts/sync_pipeline.py --global --target codex` | Delegated, using Codex's file-defined sub-agents in `~/.codex/agents/`; sequential if they can't start | No slash commands: ask for what you want and the matching `steno-*` skill (in `~/.agents/skills/`) applies. Start setup with the form command |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `python3 scripts/sync_pipeline.py --global --target gemini` | Delegated, using Gemini's sub-agents in `~/.gemini/agents/`; sequential if they can't start | No slash commands: the `steno-*` skills in `~/.gemini/skills/` apply instead. Start setup with the form command |
+
+In **sequential** mode, the fallback for a tool that can't start sub-agents, the main session runs each stage itself from the same stage files, with the same checks. The one difference is Stage 5: the session that wrote the draft also reviews it, so the scorecard marks that review "(not independent)". `/test-pipeline --compare-modes` checks that the two modes score the same on your past meetings.
+
+Each project's instruction file is `AGENTS.md`, which all three tools read: Codex directly, Claude Code and Gemini CLI through the `CLAUDE.md` and `GEMINI.md` stubs beside it. A project set up before AGENTS.md keeps working from its `CLAUDE.md`.
 
 ### The first-run form
 
@@ -78,12 +93,15 @@ steno/
 │   ├── generate_setup_form.py   ← renders + opens the form
 │   ├── first_run_check.py       ← SessionStart hook: fires the form once per clone
 │   └── sync_pipeline.py         ← installs/updates agents, commands and skill scripts
+├── AGENTS.md              ← instructions for an agent working in this repo (CLAUDE.md, GEMINI.md import it)
 ├── projects.txt           ← your installed projects; created by /setup-pipeline, gitignored
 ├── tests/                 ← plain python, no framework: python3 tests/<file>.py
 │   ├── test_check_draft.py      ← the draft checker, one case per rule
-│   └── test_sync_pipeline.py    ← the installer and updater
+│   ├── test_sync_pipeline.py    ← the installer and updater, for every target tool
+│   ├── test_project_file.py     ← AGENTS.md / CLAUDE.md lookup in the renderer
+│   └── test_first_run.py        ← the setup form command, hook and marker
 ├── global/
-│   ├── commands/          ← installed to ~/.claude/commands/
+│   ├── commands/          ← Claude Code slash commands; every tool also gets a steno-<command> skill built from each
 │   │   ├── process-notes.md
 │   │   ├── learn.md
 │   │   ├── apply-learning.md
@@ -92,7 +110,7 @@ steno/
 │   │   ├── audit.md
 │   │   ├── status.md
 │   │   └── setup-pipeline.md
-│   └── agents/            ← installed to ~/.claude/agents/
+│   └── agents/            ← the stage files: sub-agents for each tool (Codex gets them as TOML)
 │       ├── formatter.md
 │       ├── editorial-qa.md
 │       ├── discipline-checker.md
@@ -101,7 +119,8 @@ steno/
 │       ├── docx-renderer.md
 │       └── learning-reviewer.md
 └── project-template/      ← copied and renamed per project
-    ├── AGENTS.md
+    ├── AGENTS.md          ← the project file: roster, organisations, file locations
+    ├── CLAUDE.md, GEMINI.md  ← stubs that import AGENTS.md
     └── Meeting Notes/
         ├── supervisor-style-guide-[PROJECT].md
         ├── pipeline-memory-[PROJECT].md     ← open patterns, open decisions, run log
@@ -173,7 +192,7 @@ The pipeline's `supervisor-alignment` agent applies seeded preferences immediate
 | 3 | `discipline-checker` | Judgement calls on attribution the script cannot decide |
 | 4 | `supervisor-alignment` | Apply documented supervisor preferences |
 | 4.5 | `check_draft.py` | The same check again — Stage 4 is the last stage that edits text, and nothing else re-validates it. Blocking, max 2 repair attempts |
-| 5 | `draft-reviewer` | A fresh agent grades the draft against the transcript and the ledger: invented content, dropped actions, lost rationale, scope, status. Never edits |
+| 5 | `draft-reviewer` | A fresh agent (in delegated mode) grades the draft against the transcript and the ledger: invented content, dropped actions, lost rationale, scope, status. Never edits |
 | 6 | `docx-renderer` | Render the final markdown to a formatted .docx with `render.py`. A draft fault (named by its draft line) goes back to Stage 1, or Stage 4 if a later stage introduced it, then 4.5, 5 and 6 run again: max 2 repair attempts. A template, constants or install fault stops with the fix. Never a hand-written XML fallback |
 
 Stages 1 to 5 write their draft to `working/runs/<transcript stem>/`, one folder per meeting, so `/learn` can tell which stage introduced a correction. A meeting can be processed before the previous one's `/learn`: the cleanup script takes `--stem` and deletes only that meeting's run folder, transcript and draft.

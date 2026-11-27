@@ -36,6 +36,13 @@
 - DOCX blank template: Meeting Notes/[PROJECT]_blank_template.docx
 - DOCX working dir: Meeting Notes/working/
 
+## Pipeline commands
+Steno's commands are `/process-notes`, `/learn`, `/apply-learning`, `/test-pipeline`,
+`/sync-pipeline`, `/setup-pipeline`, `/status` and `/audit`. Claude Code runs them as
+slash commands. Every tool also has each one as a skill named `steno-<command>` (for
+example `steno-process-notes`), so in Codex CLI or Gemini CLI, ask for what you want or
+name the skill.
+
 ## Project roster — [PROJECT NAME]
 | Name | Organisation | Title |
 |---|---|---|
