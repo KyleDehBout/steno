@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """First-run rule for Steno.
 
-Wired to SessionStart in .claude/settings.json. On the first session after
-someone clones this repo, it opens the project setup form in a browser and
-tells Claude to wait for the pasted setup block. Every session after that it
-does nothing.
+Wired to SessionStart in .claude/settings.json, so it runs in Claude Code only. On
+the first session after someone clones this repo, it opens the project setup form in
+a browser and tells Claude to wait for the pasted setup block. Every session after
+that it does nothing. Other tools start setup by hand, the documented way for every
+tool:  python3 scripts/generate_setup_form.py
 
-The marker that makes it fire once lives at .claude/.setup-state.json and is
-gitignored, so a fresh clone always gets the form.
+The marker that makes it fire once is .steno/setup-state.json, written by
+/setup-pipeline when setup finishes, and gitignored, so a fresh clone always gets
+the form. A clone set up before that path existed has .claude/.setup-state.json
+instead, which still counts.
 
 Escape hatches:
   MNP_SKIP_FIRST_RUN=1   skip entirely
-  Delete .claude/.setup-state.json to make the form fire again.
+  Delete the marker to make the form fire again.
 """
 
 import json
@@ -21,7 +24,8 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-MARKER = REPO / ".claude" / ".setup-state.json"
+MARKER = REPO / ".steno" / "setup-state.json"
+LEGACY_MARKER = REPO / ".claude" / ".setup-state.json"  # clones set up before .steno/
 GENERATOR = REPO / "scripts" / "generate_setup_form.py"
 FORM_TEMPLATE = REPO / "assets" / "setup-form.html"
 
@@ -76,7 +80,8 @@ def main():
         emit()
 
     # Already set up, or not actually this repo — stay quiet.
-    if MARKER.exists() or not FORM_TEMPLATE.is_file() or not GENERATOR.is_file():
+    if (MARKER.exists() or LEGACY_MARKER.exists()
+            or not FORM_TEMPLATE.is_file() or not GENERATOR.is_file()):
         emit()
 
     try:

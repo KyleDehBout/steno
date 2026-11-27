@@ -35,30 +35,36 @@ Every correction your supervisor makes becomes a rule. Rules accumulate in proje
 
 ### Install
 
-1. Clone this repo and open it in Claude Code
-2. **The setup form opens in your browser automatically** — this is the first-run rule, and it fires once per clone
+1. Clone this repo.
+2. Start setup in the clone:
+
+   ```bash
+   python3 scripts/generate_setup_form.py
+   ```
+
+   The setup form opens in your browser. In Claude Code you can skip this step: on the first session after you clone, a hook runs it for you.
 3. Fill it in: project name, folder path, team roster, organisation names, and your document style defaults
 4. Click **Generate setup block**, then **Copy to clipboard** or **Copy & close**
-5. Paste the block back into Claude Code — setup runs from there with no further questions
-6. Open your new project folder in Claude Code and you're live
+5. Paste the block into your AI agent opened in the clone folder. Setup runs from there with no further questions
+6. Open your new project folder in your agent and you're live
 
-The installer copies the global agents and commands into your `~/.claude/` directory and scaffolds your project folder from the template. It does not overwrite any existing files.
+Setup installs the shared agents, commands and skills for your tool (`scripts/sync_pipeline.py --target …`) and scaffolds your project folder from the template. It never overwrites a file that already exists.
 
-Optional: before filling in the form, upload a past `.docx` set of meeting notes to Claude Code. It reads your roster, organisation names, branding, and style out of the file and reopens the form with those fields already filled in and badged **Prefilled**.
+Optional: before filling in the form, give your agent a past `.docx` set of meeting notes. It reads your roster, organisation names, branding, and style out of the file and reopens the form with those fields already filled in and badged **Prefilled**.
 
 ### The first-run form
 
 | | |
 |---|---|
-| Opens | Automatically, on the first Claude Code session after you clone |
-| Fires again | Only if you delete `.claude/.setup-state.json`, or run `/setup-pipeline` by hand |
-| Skip it | `MNP_SKIP_FIRST_RUN=1` |
-| Wired in | `.claude/settings.json` → `SessionStart` → `scripts/first_run_check.py` |
+| Opens | When you run `python3 scripts/generate_setup_form.py`, in any tool. Claude Code also opens it automatically on the first session after you clone |
+| Fires again (Claude Code) | Only if you delete `.steno/setup-state.json` (or `.claude/.setup-state.json` in a clone set up before that path), or run `/setup-pipeline` by hand |
+| Skip the hook | `MNP_SKIP_FIRST_RUN=1` |
+| Hook wired in | `.claude/settings.json` → `SessionStart` → `scripts/first_run_check.py` |
 | Form source | `assets/setup-form.html`, rendered to a gitignored `setup-session.html` |
 
-The generated form is fully self-contained — no network, no CDN, works offline. Nothing is written to your project until you paste the block back into Claude Code, so you can close the tab and walk away at any point.
+The generated form is fully self-contained — no network, no CDN, works offline. Nothing is written to your project until you paste the block back into your agent, so you can close the tab and walk away at any point.
 
-Setting up a second project later does not use the hook — run `/setup-pipeline` yourself and the same form opens.
+Setting up a second project later does not use the hook — run the form command (or `/setup-pipeline` in Claude Code) and the same form opens.
 
 ---
 
