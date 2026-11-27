@@ -1,3 +1,7 @@
+---
+description: "Apply the rule changes the user approved in the learning review form. Use when the user pastes a block that starts with ==LEARNING_REVIEW==, or asks to apply the learning review."
+---
+
 # apply-learning
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.

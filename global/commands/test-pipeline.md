@@ -1,3 +1,7 @@
+---
+description: "Run the pipeline on past meetings and score the drafts against what the supervisor actually issued. Use before trusting a change to an agent, a rule or a check, or when the user asks to test or benchmark the pipeline."
+---
+
 # Test pipeline
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.

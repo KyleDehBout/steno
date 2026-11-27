@@ -1,3 +1,7 @@
+---
+description: "Compare the pipeline's draft with the final version the supervisor issued and propose rule changes in a browser review form. Use when the user has put an issued set of notes in the intake folder, or asks the pipeline to learn from corrections."
+---
+
 # Learn from final issued notes
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.

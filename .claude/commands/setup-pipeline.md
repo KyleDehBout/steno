@@ -1,3 +1,7 @@
+---
+description: "Set up Steno for a new project: open the setup form, then scaffold the project folder and install the agents and skills. Use when the user wants to start using the meeting notes pipeline on a new project."
+---
+
 # Setup Steno
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.

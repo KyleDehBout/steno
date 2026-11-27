@@ -1,3 +1,7 @@
+---
+description: "Turn the newest meeting transcript in this project's transcripts folder into finished meeting notes (.docx). Use when the user asks to process, format, write up or minute a meeting, or to run the meeting notes pipeline."
+---
+
 # Process meeting notes
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
