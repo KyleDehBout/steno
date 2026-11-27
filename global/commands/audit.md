@@ -1,3 +1,7 @@
+---
+description: "Summarise what the pipeline has learned for this project: approved, rejected and promoted rules, open patterns and recent scores. Use when the user asks what the pipeline has learned or wants a learning audit."
+---
+
 # Audit pipeline learning — Steno
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.

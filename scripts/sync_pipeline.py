@@ -42,6 +42,7 @@ Exit codes: 0 = done (or nothing to do), 1 = a copy failed, 2 = bad usage.
 """
 import argparse
 import filecmp
+import json
 import os
 import re
 import shutil
@@ -70,7 +71,7 @@ SKIP_WITHIN_SKILL = (('docx-renderer', 'references'),)
 # A backup folder this script made: its exact name, and the top-level folders it can hold
 # in each location. A hand-made backup with any other shape is never pruned.
 BACKUP_NAME = re.compile(r'^\.pipeline-backup-\d{8}-\d{6}$')
-GLOBAL_BACKUP_PARTS = {'agents', 'commands', '.claude'}
+GLOBAL_BACKUP_PARTS = {'agents', 'commands', 'skills', '.claude'}
 
 # Where each tool keeps its user-level files, checked against each tool's docs in
 # November 2026:
@@ -81,16 +82,27 @@ GLOBAL_BACKUP_PARTS = {'agents', 'commands', '.claude'}
 #                not installed there.
 #   Gemini CLI   ~/.gemini/agents/*.md sub-agents with name and description frontmatter,
 #                the same shape as ours, so the files are copied as they are.
-# Each kind maps to (folder under the tool's home, format), or is absent when the tool
-# gets nothing of that kind.
+# Skills (a folder holding SKILL.md, the open Agent Skills format) are built from the
+# commands: Claude Code reads ~/.claude/skills, Codex reads ~/.agents/skills (not under
+# its own home), Gemini CLI reads ~/.gemini/skills.
+# Each kind maps to (base, folder, format): base 'tool' is the tool's home, 'HOME' the
+# user's home. A kind is absent when the tool gets nothing of it.
 TARGETS = {
     'claude': {'home': ('HOME', '.claude'),
-               'kinds': {'agents': ('agents', 'md'), 'commands': ('commands', 'md')}},
+               'kinds': {'agents': ('tool', 'agents', 'md'),
+                         'commands': ('tool', 'commands', 'md'),
+                         'skills': ('tool', 'skills', 'skill')}},
     'codex': {'home': ('CODEX_HOME', '.codex'),
-              'kinds': {'agents': ('agents', 'codex-toml')}},
+              'kinds': {'agents': ('tool', 'agents', 'codex-toml'),
+                        'skills': ('HOME', '.agents/skills', 'skill')}},
     'gemini': {'home': ('HOME', '.gemini'),
-               'kinds': {'agents': ('agents', 'md')}},
+               'kinds': {'agents': ('tool', 'agents', 'md'),
+                         'skills': ('tool', 'skills', 'skill')}},
 }
+
+# A command's skill is named for the pipeline, so it never collides with a user's own
+# skill called "status" or "audit".
+SKILL_PREFIX = 'steno-'
 
 
 def target_home(target, home):
@@ -114,6 +126,8 @@ def split_frontmatter(text):
         elif ':' in line:
             key, _, value = line.partition(':')
             key, value = key.strip(), value.strip()
+            if len(value) > 1 and value[0] == value[-1] == '"':
+                value = json.loads(value)
             fields[key] = '' if value in ('>', '|', '>-', '|-') else value
     return fields, text[end + 5:].lstrip('\n')
 
@@ -122,6 +136,20 @@ def toml_string(value):
     """A TOML multi-line basic string holding value exactly."""
     escaped = value.replace('\\', '\\\\').replace('"', '\\"')
     return '"""\n' + escaped + '"""'
+
+
+def command_skill(source):
+    """(skill folder name, SKILL.md text) built from one command file. The command file
+    is the only copy anyone edits; the skill is rebuilt from it on every sync."""
+    fields, body = split_frontmatter(source.read_text(encoding='utf-8'))
+    if not fields.get('description'):
+        raise ValueError('%s has no description in its frontmatter' % source.name)
+    name = SKILL_PREFIX + source.stem
+    return name, ('---\nname: %s\ndescription: %s\n---\n\n'
+                  '<!-- Built from global/commands/%s by scripts/sync_pipeline.py. '
+                  'Edit that file, not this one. -->\n\n%s'
+                  % (name, json.dumps(fields['description'], ensure_ascii=False),
+                     source.name, body))
 
 
 def codex_agent(text):
@@ -181,20 +209,28 @@ def sync_global(sync, home, target='claude'):
     tool_home = target_home(target, home)
     backup_root = tool_home / ('.pipeline-backup-%s' % stamp())
 
-    for kind in ('agents', 'commands'):
+    for kind in ('agents', 'commands', 'skills'):
         if kind not in TARGETS[target]['kinds']:
             continue
-        folder, form = TARGETS[target]['kinds'][kind]
-        source_dir = REPO / 'global' / kind
+        base, folder, form = TARGETS[target]['kinds'][kind]
+        root = tool_home if base == 'tool' else home
+        # Skills are built from the commands; every other kind has its own folder.
+        source_dir = REPO / 'global' / ('commands' if kind == 'skills' else kind)
         if not source_dir.is_dir():
             continue
         for source in sorted(source_dir.glob('*.md')):
-            if form == 'codex-toml':
-                relative = Path(folder) / (source.stem + '.toml')
+            if form == 'skill':
+                name, content = command_skill(source)
+                place = Path(folder) / name / 'SKILL.md'
+                label = Path('skills') / name / 'SKILL.md'
+            elif form == 'codex-toml':
+                place = Path(folder) / (source.stem + '.toml')
                 content = codex_agent(source.read_text(encoding='utf-8'))
+                label = place
             else:
-                relative, content = Path(folder) / source.name, None
-            sync.copy(source, tool_home / relative, backup_root, relative, content)
+                place, content = Path(folder) / source.name, None
+                label = place
+            sync.copy(source, root / place, backup_root, label, content)
 
     return backup_root
 

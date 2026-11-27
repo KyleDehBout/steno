@@ -1,3 +1,7 @@
+---
+description: "Install or update the pipeline's agents, commands and skill scripts on this machine and in every listed project. Use after pulling a new version of the pipeline, when a check script is missing, or when /apply-learning says to sync."
+---
+
 # Sync pipeline
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
@@ -31,6 +35,11 @@ python3 "[pipeline repo]/scripts/sync_pipeline.py" --global --all-projects \
   agents as TOML files in `$CODEX_HOME/agents/` (default `~/.codex/agents/`), Gemini CLI
   gets them as they are in `~/.gemini/agents/`. Neither gets the slash commands: those are
   Claude Code's format. Backups go in that tool's own folder.
+- Every target also gets a skill built from each command (`steno-process-notes`,
+  `steno-learn` and so on): `~/.claude/skills/`, `~/.agents/skills/` for Codex,
+  `~/.gemini/skills/`. The skill is rebuilt from the command file on every sync, so edit
+  the command, never the installed skill. Its `description` comes from the command's
+  frontmatter and tells the agent when to use it.
 - `--project` copies the `draft-checks`, `docx-renderer`, `pipeline-cleanup` and
   `learning-form` skills into the project's `Meeting Notes/skills/`
 - `--project` takes the project root or its Meeting Notes folder, and may be repeated to

@@ -400,9 +400,21 @@ def sources(kind):
     return sorted(n for n in os.listdir(folder) if n.endswith('.md'))
 
 
+def expected_skills(folder):
+    """{relative path: bytes} of the skill built from each command, under folder."""
+    sys.path.insert(0, os.path.join(REPO, 'scripts'))
+    import sync_pipeline
+    from pathlib import Path
+    found = {}
+    for name in sources('commands'):
+        skill, text = sync_pipeline.command_skill(Path(REPO, 'global', 'commands', name))
+        found[os.path.join(folder, skill, 'SKILL.md')] = text.encode('utf-8')
+    return found
+
+
 def test_target_claude_is_unchanged():
-    """--target claude, and no --target at all, install exactly what --global always did:
-    every global agent and command, byte for byte, into ~/.claude and nowhere else."""
+    """--target claude, and no --target at all, install the same files: every global agent
+    and command byte for byte, as before, plus a skill built from each command."""
     base, home, repo, root, notes = setup('OUTER')
     try:
         code, out = run(repo, home, '--global')
@@ -416,7 +428,8 @@ def test_target_claude_is_unchanged():
         expected = {os.path.join('.claude', kind, name): open(
                         os.path.join(REPO, 'global', kind, name), 'rb').read()
                     for kind in ('agents', 'commands') for name in sources(kind)}
-        check('--target claude: every agent and command, byte for byte, nothing else',
+        expected.update(expected_skills(os.path.join('.claude', 'skills')))
+        check('--target claude: agents and commands byte for byte, plus skills, nothing else',
               default == expected, ' '.join(sorted(set(default) ^ set(expected))))
     finally:
         shutil.rmtree(base)
@@ -444,6 +457,9 @@ def test_target_codex_writes_toml_agents():
             body = handle.read().split('\n---\n', 1)[1].lstrip('\n')
         check('codex: the instructions are the agent body exactly',
               parsed.get('formatter.toml', {}).get('developer_instructions') == body)
+        check('codex: a skill per command in ~/.agents/skills',
+              {k: v for k, v in tree(home).items() if k.startswith('.agents')}
+              == expected_skills(os.path.join('.agents', 'skills')), out)
         check('codex: nothing written for Claude Code or Gemini CLI',
               not os.path.exists(os.path.join(home, '.claude'))
               and not os.path.exists(os.path.join(home, '.gemini')), out)
@@ -463,8 +479,10 @@ def test_target_gemini_copies_agents():
         expected = {os.path.join('.gemini', 'agents', name): open(
                         os.path.join(REPO, 'global', 'agents', name), 'rb').read()
                     for name in sources('agents')}
+        expected.update(expected_skills(os.path.join('.gemini', 'skills')))
         check('gemini: exits 0', code == 0, out)
-        check('gemini: every agent, byte for byte, nothing else', tree(home) == expected,
+        check('gemini: every agent byte for byte, plus skills, nothing else',
+              tree(home) == expected,
               ' '.join(sorted(set(tree(home)) ^ set(expected))))
     finally:
         shutil.rmtree(base)
@@ -474,8 +492,10 @@ def test_target_backups_and_repeats():
     """A replaced file is backed up inside the target's own folder, and --target may be
     given more than once."""
     for target, folder, name in (('claude', '.claude', 'agents/formatter.md'),
+                                 ('claude', '.claude', 'skills/steno-status/SKILL.md'),
                                  ('codex', '.codex', 'agents/formatter.toml'),
-                                 ('gemini', '.gemini', 'agents/formatter.md')):
+                                 ('gemini', '.gemini', 'agents/formatter.md'),
+                                 ('gemini', '.gemini', 'skills/steno-status/SKILL.md')):
         base, home, repo, root, notes = setup('OUTER')
         try:
             run(repo, home, '--global', '--target', target)
@@ -513,6 +533,37 @@ def test_all_projects_with_every_target():
                   and os.path.isdir(os.path.join(home, '.' + target, 'agents')), out)
         finally:
             shutil.rmtree(base)
+
+
+def test_skills_are_built_from_the_commands():
+    """One source of truth: the repo holds no skill copy of a command, every command has
+    the description its skill needs, and editing a command changes its skill."""
+    import subprocess as sp
+    listed = sp.run(['git', '-C', REPO, 'ls-files'], capture_output=True, text=True).stdout
+    check('no generated skill is committed to the repo', 'steno-' not in listed)
+    for name in sources('commands'):
+        with open(os.path.join(REPO, 'global', 'commands', name), encoding='utf-8') as h:
+            head = h.read().split('\n---\n', 1)[0]
+        check('%s has a description for its skill' % name,
+              head.startswith('---\ndescription: "') and len(head) > 60, head[:80])
+    base, home, repo, root, notes = setup('OUTER')
+    try:
+        run(repo, home, '--global', '--target', 'gemini')
+        skill = os.path.join(home, '.gemini', 'skills', 'steno-status', 'SKILL.md')
+        with open(skill, encoding='utf-8') as handle:
+            text = handle.read()
+        check('skill: name matches its folder and the body is the command',
+              text.startswith('---\nname: steno-status\ndescription: "')
+              and '# Project status' in text, text[:200])
+        command = os.path.join(repo, 'global', 'commands', 'status.md')
+        with open(command, 'a', encoding='utf-8') as handle:
+            handle.write('\nA line added to the command.\n')
+        code, out = run(repo, home, '--global', '--target', 'gemini')
+        with open(skill, encoding='utf-8') as handle:
+            check('editing the command updates its skill on the next sync',
+                  code == 0 and 'A line added to the command.' in handle.read(), out)
+    finally:
+        shutil.rmtree(base)
 
 
 if __name__ == '__main__':

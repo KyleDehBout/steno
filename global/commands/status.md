@@ -1,3 +1,7 @@
+---
+description: "Show the current state of this meeting notes project: what is in each folder, whether skills, renderer and checks are ready, and what to do next. Use when the user asks for the project or pipeline status."
+---
+
 # Project status — Steno
 
 > **Project instruction file.** `AGENTS.md` here means the project's instruction file: `AGENTS.md`, or `CLAUDE.md` in a project set up before Steno moved to AGENTS.md. Read whichever the project has. When both sit in one folder, AGENTS.md holds the project and CLAUDE.md only points to it.
