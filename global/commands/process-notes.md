@@ -15,7 +15,8 @@ is the transcript's filename without its extension (`transcript-2026-10-08.txt` 
 `runs/transcript-2026-10-08/`). Every `runs/<stem>/` below means this meeting's folder.
 
 Before Stage 1, delete this meeting's run folder and create it empty, then write
-`run.txt` in it with one line: `transcript: <transcript filename>`. Touch no other
+`run.txt` in it with two lines: `transcript: <transcript filename>` and
+`mode: delegated` or `mode: sequential` (see "Run mode" below). Touch no other
 meeting's run folder: a meeting processed before the last one's `/learn` must not
 destroy the stage files that `/learn` still needs.
 
@@ -27,8 +28,8 @@ append one line:
 stage <N> <agent or check>: start <time> end <time> tokens <n|n/a>
 ```
 
-`tokens` is the total the agent's result reported (its usage line), or `n/a` for a check
-or when no figure was reported. Never estimate it. A re-run stage adds another line, so a
+`tokens` is the total the agent's result reported (its usage line), or `n/a` for a check,
+for any stage in sequential mode, or when no figure was reported. Never estimate it. A re-run stage adds another line, so a
 repair loop shows as extra lines. These lines carry no meeting content; they are what the
 scorecard's Run time column is computed from.
 
@@ -97,6 +98,35 @@ If any warnings exist, print all of them, then ask:
 "Proceed anyway? (y/n)"
 If n: stop. If y: proceed to Stage 1.
 If no warnings: proceed to Stage 1 silently.
+
+---
+
+## Run mode — decide once, before Stage 1
+
+Each stage's instructions live in one stage file: `global/agents/<name>.md` in the
+pipeline repo (the "Pipeline repo" line in AGENTS.md), the body after its front matter.
+The six stages are `formatter`, `editorial-qa`, `discipline-checker`,
+`supervisor-alignment`, `draft-reviewer` and `docx-renderer`. The same files drive both
+modes, so the stages do the same work either way.
+
+- **Delegated** — each stage runs as its own sub-agent, started from the installed agent
+  of that name, and returns its result to you. Use it whenever your tool can start the
+  named agents: Claude Code (`~/.claude/agents/`), Codex CLI (`~/.codex/agents/`) and
+  Gemini CLI (`~/.gemini/agents/`) all can once `sync_pipeline.py --global --target
+  <tool>` has installed them. This is the default.
+- **Sequential** — the fallback when your tool cannot start a sub-agent, or the agents
+  are not installed for it. You run each stage yourself: read that stage's file, load
+  the files listed for the stage below, follow the stage file exactly as a sub-agent
+  would, and take what it says to return as the stage's result. Everything else is
+  unchanged: each result is written to `runs/<stem>/stage-N.md` before the next stage,
+  the checks gate it the same way, the repair-loop limits are the same, and `run.txt`
+  gets the same lines.
+
+Below, "pass X to the Y agent" means, in sequential mode, "load X, then follow Y's stage
+file". Never mix modes within a run: if delegated mode fails to start a stage's agent,
+stop with PIPELINE FAILED, and start the run again in sequential mode if that is wanted.
+
+Write the mode to `run.txt` before Stage 1 (see "Before starting").
 
 ---
 
@@ -250,6 +280,13 @@ Files to pass to the draft-reviewer agent:
 The reviewer never edits. It returns `REVIEW: PASS`, or `REVIEW: FAIL` with findings
 routed to a stage.
 
+**In sequential mode the review is not independent.** In delegated mode the reviewer is a
+fresh agent that never saw the earlier stages; in sequential mode you wrote the draft you
+are grading. Get as close as you can: grade only from the transcript, `ledger.md`,
+`stage-4.md` and the three rule files listed above, re-read from disk now. Do not use
+anything you remember from Stages 1 to 4, and do not reread their stage files or notes.
+The scorecard records that this review was not independent (see "Scorecard").
+
 On FAIL: re-run the named stage with the findings, re-run the Stage 4.5 check, and review
 again. **Maximum 2 review attempts.** If the second review still fails, do not stop the
 pipeline — render the draft and print the outstanding findings in the summary report. The
@@ -368,6 +405,9 @@ Render attempts is the number of times `render.py` ran in this run: `1` for a cl
 render, up to `3` after two repairs. If the run stopped at Stage 6, add "(stopped)" after
 the figure.
 
+In sequential mode, add "(not independent)" after the review findings figure, because
+the same session wrote and graded the draft.
+
 If the Stage 4.5 override was used, add "(override used)" after the render attempts
 figure. That number is how a check that is wrong too often becomes visible instead of
 being quietly worked around.
@@ -377,6 +417,8 @@ long-term record.
 
 ## Summary report — print after Stage 6 completes or stops
 - Which transcript was processed and its date
+- The run mode, delegated or sequential; for sequential, that the Stage 5 review was not
+  independent
 - EDITORIAL NOTE and HUMANIZER NOTE from Stage 2
 - Stage 2.5: errors and warnings, and whether a repair ran
 - DISCIPLINE NOTE from Stage 3

@@ -22,7 +22,9 @@ What to watch:
 - **Repair attempts rising** means the checks are catching things the agents keep
   re-breaking — look at which stage the findings were routed to.
 - **Review findings rising** means content is being dropped or invented, which no script
-  can catch. That is the serious direction.
+  can catch. That is the serious direction. A figure marked "(not independent)" came from
+  a sequential run, where the session that wrote the draft also reviewed it, so expect it
+  to find less than a fresh reviewer would.
 - **Run time rising** with no rise in repairs means a stage got slower or bigger. The
   per-stage times and tokens are in that run's `run.txt` until `/learn` cleans it up.
 

@@ -65,7 +65,7 @@ Applies to both passes.
 
 ## Output
 Return the complete revised draft as plain text, followed by the sentinel line
-`---PIPELINE NOTES---` and then two metadata lines. Both are for the orchestrator's summary
+`---PIPELINE NOTES---` and then two metadata lines. Both are for the /process-notes summary
 and are stripped before rendering — neither reaches the final doc. The draft checker stops
 reading at the sentinel, so nothing below it can be mistaken for document content.
 

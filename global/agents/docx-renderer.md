@@ -35,7 +35,7 @@ Run the one command in SKILL.md's "Run it" section, with the output filename it 
 `RENDER FAILED at Step N (<step>): [<kind>] <reason>`. Return that line as it is: the
 `[<kind>]` tag and the `draft line N` in the reason are how /process-notes routes the fix
 to the stage that owns it. Never write the body XML yourself, run the steps by hand, edit
-the draft, retry, or edit the scripts to get past it. Fixing is the orchestrator's job.
+the draft, retry, or edit the scripts to get past it. Fixing is the /process-notes run's job, not this stage's.
 
 ## Step 3 — Return status
 

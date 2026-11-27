@@ -96,5 +96,10 @@ The agent triages the differences before proposing anything, asks unanswered que
 from earlier cycles first, caps the form at 6 proposals, then generates the browser
 review form and waits.
 
+If your tool cannot start the installed `learning-reviewer` agent, run it yourself in
+sequential mode, as /process-notes "Run mode" describes: load the same files, then follow
+the pipeline repo's `global/agents/learning-reviewer.md` (the body after its front
+matter).
+
 ## After user pastes the review block
 /apply-learning handles all writes automatically when the user pastes the ==LEARNING_REVIEW== block.
