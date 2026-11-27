@@ -26,6 +26,11 @@ python3 "[pipeline repo]/scripts/sync_pipeline.py" --global --all-projects \
   check reaches all of them at once. A project named twice is synced once. If this
   project is not in `projects.txt`, say so and ask the user to add it.
 - `--global` copies `global/agents/*.md` and `global/commands/*.md` into `~/.claude/`
+- `--target codex` or `--target gemini` (with `--global`) installs for that tool instead;
+  repeat `--target` to install for several. Claude Code is the default. Codex gets the
+  agents as TOML files in `$CODEX_HOME/agents/` (default `~/.codex/agents/`), Gemini CLI
+  gets them as they are in `~/.gemini/agents/`. Neither gets the slash commands: those are
+  Claude Code's format. Backups go in that tool's own folder.
 - `--project` copies the `draft-checks`, `docx-renderer`, `pipeline-cleanup` and
   `learning-form` skills into the project's `Meeting Notes/skills/`
 - `--project` takes the project root or its Meeting Notes folder, and may be repeated to

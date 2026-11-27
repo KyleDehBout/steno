@@ -80,8 +80,10 @@ def backups(folder):
     return sorted(n for n in os.listdir(folder) if n.startswith('.pipeline-backup-'))
 
 
-def run(repo, home, *args):
+def run(repo, home, *args, **extra_env):
     env = dict(os.environ, HOME=home)
+    env.pop('CODEX_HOME', None)
+    env.update(extra_env)
     result = subprocess.run(
         [sys.executable, os.path.join(repo, 'scripts', 'sync_pipeline.py')] + list(args),
         capture_output=True, text=True, env=env)
@@ -377,6 +379,138 @@ def test_launcher_skips_sync_when_repo_has_uncommitted_synced_changes():
             code, out = run_launcher(base, home, notes, layout)
             check('clean synced paths %s: launcher syncs' % layout,
                   code == 0 and 'CLAUDE-STARTED' in out and synced(notes), out)
+        finally:
+            shutil.rmtree(base)
+
+
+def tree(folder):
+    """Every file under folder, minus backups, as {relative path: bytes}."""
+    found = {}
+    for dirpath, dirnames, filenames in os.walk(folder):
+        dirnames[:] = [d for d in dirnames if not d.startswith('.pipeline-backup-')]
+        for name in filenames:
+            path = os.path.join(dirpath, name)
+            with open(path, 'rb') as handle:
+                found[os.path.relpath(path, folder)] = handle.read()
+    return found
+
+
+def sources(kind):
+    folder = os.path.join(REPO, 'global', kind)
+    return sorted(n for n in os.listdir(folder) if n.endswith('.md'))
+
+
+def test_target_claude_is_unchanged():
+    """--target claude, and no --target at all, install exactly what --global always did:
+    every global agent and command, byte for byte, into ~/.claude and nowhere else."""
+    base, home, repo, root, notes = setup('OUTER')
+    try:
+        code, out = run(repo, home, '--global')
+        default = tree(home)
+        other_home = os.path.join(base, 'home2')
+        os.makedirs(other_home)
+        code2, out2 = run(repo, other_home, '--global', '--target', 'claude')
+        check('--target claude: exits 0', code == 0 and code2 == 0, out + out2)
+        check('--target claude: same files as no --target', tree(other_home) == default,
+              out2)
+        expected = {os.path.join('.claude', kind, name): open(
+                        os.path.join(REPO, 'global', kind, name), 'rb').read()
+                    for kind in ('agents', 'commands') for name in sources(kind)}
+        check('--target claude: every agent and command, byte for byte, nothing else',
+              default == expected, ' '.join(sorted(set(default) ^ set(expected))))
+    finally:
+        shutil.rmtree(base)
+
+
+def test_target_codex_writes_toml_agents():
+    import tomllib
+    base, home, repo, root, notes = setup('OUTER')
+    try:
+        code, out = run(repo, home, '--global', '--target', 'codex')
+        agents = os.path.join(home, '.codex', 'agents')
+        files = sorted(os.listdir(agents)) if os.path.isdir(agents) else []
+        check('codex: exits 0', code == 0, out)
+        check('codex: one agent file per global agent',
+              files == [n[:-3] + '.toml' for n in sources('agents')], ' '.join(files))
+        parsed = {}
+        for name in files:
+            with open(os.path.join(agents, name), 'rb') as handle:
+                parsed[name] = tomllib.load(handle)
+        check('codex: each has name, description and the agent body as instructions',
+              all(d['name'] == n[:-5] and d['description'] and d['developer_instructions']
+                  for n, d in parsed.items()), out)
+        with open(os.path.join(REPO, 'global', 'agents', 'formatter.md'),
+                  encoding='utf-8') as handle:
+            body = handle.read().split('\n---\n', 1)[1].lstrip('\n')
+        check('codex: the instructions are the agent body exactly',
+              parsed.get('formatter.toml', {}).get('developer_instructions') == body)
+        check('codex: nothing written for Claude Code or Gemini CLI',
+              not os.path.exists(os.path.join(home, '.claude'))
+              and not os.path.exists(os.path.join(home, '.gemini')), out)
+        codex_home = os.path.join(base, 'custom-codex')
+        code, out = run(repo, home, '--global', '--target', 'codex', CODEX_HOME=codex_home)
+        check('codex: CODEX_HOME is honoured',
+              code == 0 and os.path.isfile(os.path.join(codex_home, 'agents',
+                                                         'formatter.toml')), out)
+    finally:
+        shutil.rmtree(base)
+
+
+def test_target_gemini_copies_agents():
+    base, home, repo, root, notes = setup('OUTER')
+    try:
+        code, out = run(repo, home, '--global', '--target', 'gemini')
+        expected = {os.path.join('.gemini', 'agents', name): open(
+                        os.path.join(REPO, 'global', 'agents', name), 'rb').read()
+                    for name in sources('agents')}
+        check('gemini: exits 0', code == 0, out)
+        check('gemini: every agent, byte for byte, nothing else', tree(home) == expected,
+              ' '.join(sorted(set(tree(home)) ^ set(expected))))
+    finally:
+        shutil.rmtree(base)
+
+
+def test_target_backups_and_repeats():
+    """A replaced file is backed up inside the target's own folder, and --target may be
+    given more than once."""
+    for target, folder, name in (('claude', '.claude', 'agents/formatter.md'),
+                                 ('codex', '.codex', 'agents/formatter.toml'),
+                                 ('gemini', '.gemini', 'agents/formatter.md')):
+        base, home, repo, root, notes = setup('OUTER')
+        try:
+            run(repo, home, '--global', '--target', target)
+            with open(os.path.join(home, folder, name), 'w') as handle:
+                handle.write('edited by hand\n')
+            code, out = run(repo, home, '--global', '--target', target)
+            made = backups(os.path.join(home, folder))
+            saved = [os.path.join(home, folder, b, name) for b in made]
+            check('%s: replaced file backed up under ~/%s' % (target, folder),
+                  code == 0 and len(made) == 1 and os.path.isfile(saved[0])
+                  and open(saved[0]).read() == 'edited by hand\n', out)
+        finally:
+            shutil.rmtree(base)
+    base, home, repo, root, notes = setup('OUTER')
+    try:
+        code, out = run(repo, home, '--global', '--target', 'codex', '--target', 'gemini')
+        check('two --target flags: both installed, Claude Code untouched',
+              code == 0 and os.path.isdir(os.path.join(home, '.codex', 'agents'))
+              and os.path.isdir(os.path.join(home, '.gemini', 'agents'))
+              and not os.path.exists(os.path.join(home, '.claude')), out)
+        code, out = run(repo, home, '--project', root, '--target', 'codex')
+        check('--target without --global: refused', code == 2 and not synced(notes), out)
+    finally:
+        shutil.rmtree(base)
+
+
+def test_all_projects_with_every_target():
+    for target in ('claude', 'codex', 'gemini'):
+        base, home, repo, root, notes = setup('OUTER')
+        try:
+            write_projects_list(repo, [root])
+            code, out = run(repo, home, '--global', '--target', target, '--all-projects')
+            check('--all-projects --target %s: global and project both synced' % target,
+                  code == 0 and synced(notes)
+                  and os.path.isdir(os.path.join(home, '.' + target, 'agents')), out)
         finally:
             shutil.rmtree(base)
 
